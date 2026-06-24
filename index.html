@@ -895,12 +895,18 @@ function Learn({
       wrong_count: prog.wrong_count + (correct ? 0 : 1)
     };
     pendingNext.current = np;
+    const uid = (await sb.auth.getUser()).data.user.id;
     sb.from('learning_answers').insert({
+      user_id: uid,
       question_id: q.id,
       selected: sel,
       is_correct: correct,
       created_at: new Date().toISOString()
-    }); // fire & forget
+    }).then(({
+      error
+    }) => {
+      if (error) console.error('learning_answers insert failed:', error.message);
+    });
     setBusy(false);
     if (correct) {
       setGraded({
