@@ -898,7 +898,8 @@ function Learn({
     sb.from('learning_answers').insert({
       question_id: q.id,
       selected: sel,
-      is_correct: correct
+      is_correct: correct,
+      created_at: new Date().toISOString()
     }); // fire & forget
     setBusy(false);
     if (correct) {
