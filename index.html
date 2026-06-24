@@ -252,6 +252,10 @@ async function resetLearning(sb) {
   }).eq('user_id', u);
   await sb.from('learning_answers').delete().eq('user_id', u);
 }
+const pad2 = n => String(n).padStart(2, '0');
+const fmtDate = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+const fmtTime = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const fmtDateTime = d => `${fmtDate(d)} ${fmtTime(d)}`;
 const relUnit = (n, sing, plur) => n === 1 ? sing : `${n} ${plur}`;
 function timeAgo(ms) {
   const diff = Math.max(0, Date.now() - ms);
@@ -804,10 +808,7 @@ function Home({
     const dayName = d.toLocaleDateString('he-IL', {
       weekday: 'long'
     }).replace(/^יום /, '');
-    startLine = `הותחל ביום ${dayName}, ${d.toLocaleDateString('he-IL')}, ${d.toLocaleTimeString('he-IL', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })} (${timeAgo(d.getTime())})`;
+    startLine = `הותחל ביום ${dayName}, ${fmtDate(d)}, ${fmtTime(d)} (${timeAgo(d.getTime())})`;
   }
   const doReset = async () => {
     await resetLearning(sb);
@@ -1694,7 +1695,7 @@ function ExamResult({
     className: "lbl"
   }, "שאלות נכונות"), /*#__PURE__*/React.createElement("div", {
     className: "sub"
-  }, new Date(sess.started_at).toLocaleString('he-IL')))), /*#__PURE__*/React.createElement("h2", {
+  }, fmtDateTime(new Date(sess.started_at))))), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontSize: 18,
       margin: '22px 0 4px'
@@ -1828,7 +1829,7 @@ function History({
       }
     }, "· ", Math.round(s.duration_seconds / 60), " דק׳")), /*#__PURE__*/React.createElement("div", {
       className: "hmeta"
-    }, new Date(s.started_at).toLocaleString('he-IL'))), /*#__PURE__*/React.createElement("span", {
+    }, fmtDateTime(new Date(s.started_at)))), /*#__PURE__*/React.createElement("span", {
       className: "pctpill",
       style: {
         color: col,
