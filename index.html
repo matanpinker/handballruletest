@@ -135,6 +135,7 @@ input{font-family:inherit}
 .flash{position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center; background:rgba(31,157,91,.10); backdrop-filter:blur(2px)}
 .flash .badge{width:120px; height:120px; border-radius:50%; background:var(--correct); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 50px rgba(31,157,91,.45); animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
 .flash .hint{position:absolute; bottom:22%; font-size:13px; color:var(--correct); font-weight:600}
+.modalbg{position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; background:rgba(20,35,59,.45); backdrop-filter:blur(2px); padding:16px}
 @keyframes pop{0%{transform:scale(.4); opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1); opacity:1}}
 
 /* ---------- exam ---------- */
@@ -241,6 +242,82 @@ const shuffle = arr => {
   return a;
 };
 const chapterLabel = q => q.chapter === 'SAR' ? 'Substitution Area' : `חוק ${q.chapter}`;
+async function resetLearning(sb) {
+  const u = (await sb.auth.getUser()).data.user.id;
+  await sb.from('learning_progress').update({
+    current_index: 0,
+    correct_count: 0,
+    wrong_count: 0,
+    updated_at: new Date().toISOString()
+  }).eq('user_id', u);
+  await sb.from('learning_answers').delete().eq('user_id', u);
+}
+const relUnit = (n, sing, plur) => n === 1 ? sing : `${n} ${plur}`;
+function timeAgo(ms) {
+  const diff = Math.max(0, Date.now() - ms);
+  const MIN = 60000,
+    HOUR = 3600000,
+    DAY = 86400000,
+    WEEK = 7 * DAY,
+    MONTH = 30 * DAY,
+    YEAR = 365 * DAY;
+  const join = (a, b) => {
+    if (!b) return `לפני ${a}`;
+    return `לפני ${a}${/^\d/.test(b) ? ' ו-' : ' ו'}${b}`;
+  };
+  if (diff < HOUR) return join(relUnit(Math.max(1, Math.floor(diff / MIN)), 'דקה', 'דקות'), '');
+  if (diff < DAY) return join(relUnit(Math.floor(diff / HOUR), 'שעה', 'שעות'), '');
+  if (diff < WEEK) return join(relUnit(Math.floor(diff / DAY), 'יום', 'ימים'), '');
+  if (diff < MONTH) {
+    const w = Math.floor(diff / WEEK),
+      d = Math.floor(diff % WEEK / DAY);
+    return join(relUnit(w, 'שבוע', 'שבועות'), d ? relUnit(d, 'יום', 'ימים') : '');
+  }
+  if (diff < YEAR) {
+    const mo = Math.floor(diff / MONTH),
+      w = Math.floor(diff % MONTH / WEEK);
+    return join(relUnit(mo, 'חודש', 'חודשים'), w ? relUnit(w, 'שבוע', 'שבועות') : '');
+  }
+  const y = Math.floor(diff / YEAR),
+    mo = Math.floor(diff % YEAR / MONTH);
+  return join(relUnit(y, 'שנה', 'שנים'), mo ? relUnit(mo, 'חודש', 'חודשים') : '');
+}
+function ConfirmDialog({
+  text,
+  onYes,
+  onNo
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "modalbg",
+    onClick: onNo
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      maxWidth: 400,
+      textAlign: 'center'
+    },
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: '0 0 20px',
+      fontSize: 15,
+      fontWeight: 600,
+      lineHeight: 1.5
+    }
+  }, text), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    onClick: onYes
+  }, "כן"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    onClick: onNo
+  }, "לא"))));
+}
 
 /* ---------- icons ---------- */
 const Arc = ({
@@ -688,6 +765,7 @@ function Home({
 }) {
   const [prog, setProg] = useState(null);
   const [start, setStart] = useState(undefined);
+  const [confirm, setConfirm] = useState(false);
   useEffect(() => {
     let on = true;
     sb.from('learning_progress').select('*').maybeSingle().then(({
@@ -729,8 +807,18 @@ function Home({
     startLine = `הותחל ביום ${dayName}, ${d.toLocaleDateString('he-IL')}, ${d.toLocaleTimeString('he-IL', {
       hour: '2-digit',
       minute: '2-digit'
-    })}`;
+    })} (${timeAgo(d.getTime())})`;
   }
+  const doReset = async () => {
+    await resetLearning(sb);
+    setProg({
+      current_index: 0,
+      correct_count: 0,
+      wrong_count: 0
+    });
+    setStart(null);
+    setConfirm(false);
+  };
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "hero"
   }, /*#__PURE__*/React.createElement("h1", null, "על מה נתאמן היום?"), /*#__PURE__*/React.createElement("p", null, "מאגר רשמי של ", TOTAL, " שאלות חוקה. תשובה נכונה = בדיוק כל האפשרויות הנכונות סומנו.")), /*#__PURE__*/React.createElement("div", {
@@ -821,7 +909,19 @@ function Home({
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost btn-block",
     onClick: () => go('history')
-  }, "מבחנים קודמים ›")));
+  }, "מבחנים קודמים ›")), prog && (prog.current_index > 0 || prog.correct_count > 0 || prog.wrong_count > 0) && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "linkbtn",
+    onClick: () => setConfirm(true)
+  }, "איפוס התקדמות הלמידה")), confirm && /*#__PURE__*/React.createElement(ConfirmDialog, {
+    text: "אתה עומד לאפס את כל נתוני הלמידה שלך שבוצעו עד כה. פעולה זו לא ניתנת לשחזור. האם אתה בטוח שברצונך לעשות זאת?",
+    onYes: doReset,
+    onNo: () => setConfirm(false)
+  }));
 }
 
 /* ============================================================
@@ -836,6 +936,7 @@ function Learn({
   const [graded, setGraded] = useState(null); // null | {correct:bool}
   const [flash, setFlash] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm] = useState(false);
   const flashTimer = useRef(null);
   const pendingNext = useRef(null);
   useEffect(() => {
@@ -922,20 +1023,15 @@ function Learn({
   };
   const cont = () => advance(pendingNext.current);
   const resetAll = async () => {
-    const u = (await sb.auth.getUser()).data.user.id;
-    const np = {
+    await resetLearning(sb);
+    setProg({
       current_index: 0,
       correct_count: 0,
       wrong_count: 0
-    };
-    await sb.from('learning_progress').update({
-      ...np,
-      updated_at: new Date().toISOString()
-    }).eq('user_id', u);
-    await sb.from('learning_answers').delete().eq('user_id', u);
-    setProg(np);
+    });
     setSel([]);
     setGraded(null);
+    setConfirm(false);
   };
   const pct = Math.round(idx / TOTAL * 100);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -1074,7 +1170,7 @@ function Learn({
     }
   }, !done && /*#__PURE__*/React.createElement("button", {
     className: "linkbtn",
-    onClick: resetAll
+    onClick: () => setConfirm(true)
   }, "איפוס התקדמות הלמידה")), flash && /*#__PURE__*/React.createElement("div", {
     className: "flash",
     onClick: () => advance(pendingNext.current)
@@ -1084,7 +1180,11 @@ function Learn({
     s: 64
   })), /*#__PURE__*/React.createElement("div", {
     className: "hint"
-  }, "נכון! ממשיכים…")));
+  }, "נכון! ממשיכים…")), confirm && /*#__PURE__*/React.createElement(ConfirmDialog, {
+    text: "אתה עומד לאפס את כל נתוני הלמידה שלך שבוצעו עד כה. פעולה זו לא ניתנת לשחזור. האם אתה בטוח שברצונך לעשות זאת?",
+    onYes: resetAll,
+    onNo: () => setConfirm(false)
+  }));
 }
 
 /* ============================================================
