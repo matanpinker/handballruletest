@@ -207,597 +207,1285 @@ input{font-family:inherit}
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script type="text/babel" data-presets="react">
-const {useState,useEffect,useRef,useCallback} = React;
+<script>
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} = React;
 const QUIZ = JSON.parse(document.getElementById('quizdata').textContent);
 const TOTAL = QUIZ.length;
-const QBY = Object.fromEntries(QUIZ.map(q=>[q.id,q]));
+const QBY = Object.fromEntries(QUIZ.map(q => [q.id, q]));
 
 /* ---------- helpers ---------- */
-const eqSet = (a,b)=>{ if(a.length!==b.length) return false; const s=new Set(a); return b.every(x=>s.has(x)); };
+const eqSet = (a, b) => {
+  if (a.length !== b.length) return false;
+  const s = new Set(a);
+  return b.every(x => s.has(x));
+};
 const letters = q => Object.keys(q.options);
-const fmtClock = s => { s=Math.max(0,s); const m=Math.floor(s/60), ss=s%60; return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; };
-const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
-const chapterLabel = q => q.chapter==='SAR' ? 'Substitution Area' : `חוק ${q.chapter}`;
+const fmtClock = s => {
+  s = Math.max(0, s);
+  const m = Math.floor(s / 60),
+    ss = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+};
+const shuffle = arr => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+const chapterLabel = q => q.chapter === 'SAR' ? 'Substitution Area' : `חוק ${q.chapter}`;
 
 /* ---------- icons ---------- */
-const Arc = ({size=120,color='currentColor'}) => (
-  <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-    <path d="M0 118 A118 118 0 0 1 118 0" stroke={color} strokeWidth="6" fill="none"/>
-    <path d="M0 86 A86 86 0 0 1 86 0" stroke={color} strokeWidth="4" strokeDasharray="7 9" fill="none" opacity=".6"/>
-  </svg>
-);
-const Logo = () => (
-  <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
-    <rect x="1" y="1" width="38" height="38" rx="9" fill="#14233b"/>
-    <path d="M8 32 A24 24 0 0 1 32 8" stroke="#ec5a37" strokeWidth="3.4" fill="none"/>
-    <path d="M8 32 A16 16 0 0 1 24 16" stroke="#0e7c86" strokeWidth="2.6" strokeDasharray="3.5 4" fill="none"/>
-    <circle cx="28" cy="28" r="3.6" fill="#c8a14a"/>
-  </svg>
-);
-const Check = ({s=64})=>(<svg width={s} height={s} viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const Arc = ({
+  size = 120,
+  color = 'currentColor'
+}) => /*#__PURE__*/React.createElement("svg", {
+  width: size,
+  height: size,
+  viewBox: "0 0 120 120",
+  fill: "none"
+}, /*#__PURE__*/React.createElement("path", {
+  d: "M0 118 A118 118 0 0 1 118 0",
+  stroke: color,
+  strokeWidth: "6",
+  fill: "none"
+}), /*#__PURE__*/React.createElement("path", {
+  d: "M0 86 A86 86 0 0 1 86 0",
+  stroke: color,
+  strokeWidth: "4",
+  strokeDasharray: "7 9",
+  fill: "none",
+  opacity: ".6"
+}));
+const Logo = () => /*#__PURE__*/React.createElement("svg", {
+  width: "30",
+  height: "30",
+  viewBox: "0 0 40 40",
+  fill: "none"
+}, /*#__PURE__*/React.createElement("rect", {
+  x: "1",
+  y: "1",
+  width: "38",
+  height: "38",
+  rx: "9",
+  fill: "#14233b"
+}), /*#__PURE__*/React.createElement("path", {
+  d: "M8 32 A24 24 0 0 1 32 8",
+  stroke: "#ec5a37",
+  strokeWidth: "3.4",
+  fill: "none"
+}), /*#__PURE__*/React.createElement("path", {
+  d: "M8 32 A16 16 0 0 1 24 16",
+  stroke: "#0e7c86",
+  strokeWidth: "2.6",
+  strokeDasharray: "3.5 4",
+  fill: "none"
+}), /*#__PURE__*/React.createElement("circle", {
+  cx: "28",
+  cy: "28",
+  r: "3.6",
+  fill: "#c8a14a"
+}));
+const Check = ({
+  s = 64
+}) => /*#__PURE__*/React.createElement("svg", {
+  width: s,
+  height: s,
+  viewBox: "0 0 24 24",
+  fill: "none"
+}, /*#__PURE__*/React.createElement("path", {
+  d: "M5 13l4 4L19 7",
+  stroke: "#fff",
+  strokeWidth: "3",
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+}));
 
 /* ============================================================
    SUPABASE CONFIG
 ============================================================ */
-function getConfig(){
-  try{ const raw=localStorage.getItem('hb_cfg'); return raw?JSON.parse(raw):null; }catch(e){ return null; }
+function getConfig() {
+  try {
+    const raw = localStorage.getItem('hb_cfg');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
 }
-function makeClient(cfg){ return window.supabase.createClient(cfg.url, cfg.key); }
+function makeClient(cfg) {
+  return window.supabase.createClient(cfg.url, cfg.key);
+}
 
 /* ============================================================
    APP ROOT
 ============================================================ */
-function App(){
-  const [cfg,setCfg] = useState(getConfig());
-  const [sb,setSb] = useState(null);
-  const [session,setSession] = useState(undefined); // undefined=loading
+function App() {
+  const [cfg, setCfg] = useState(getConfig());
+  const [sb, setSb] = useState(null);
+  const [session, setSession] = useState(undefined); // undefined=loading
 
-  useEffect(()=>{ if(cfg){ try{ setSb(makeClient(cfg)); }catch(e){ setCfg(null); } } },[cfg]);
-
-  useEffect(()=>{
-    if(!sb) return;
-    sb.auth.getSession().then(({data})=> setSession(data.session));
-    const {data:sub} = sb.auth.onAuthStateChange((_e,s)=> setSession(s));
-    return ()=> sub.subscription.unsubscribe();
-  },[sb]);
-
-  if(!cfg) return <Setup onSave={c=>{ localStorage.setItem('hb_cfg',JSON.stringify(c)); setCfg(c); }} />;
-  if(!sb || session===undefined) return <div className="centerpage"><div className="spin"/></div>;
-  if(!session) return <Auth sb={sb} onReconfig={()=>{ localStorage.removeItem('hb_cfg'); setCfg(null); setSb(null);} }/>;
-  return <Main sb={sb} session={session} />;
+  useEffect(() => {
+    if (cfg) {
+      try {
+        setSb(makeClient(cfg));
+      } catch (e) {
+        setCfg(null);
+      }
+    }
+  }, [cfg]);
+  useEffect(() => {
+    if (!sb) return;
+    sb.auth.getSession().then(({
+      data
+    }) => setSession(data.session));
+    const {
+      data: sub
+    } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, [sb]);
+  if (!cfg) return /*#__PURE__*/React.createElement(Setup, {
+    onSave: c => {
+      localStorage.setItem('hb_cfg', JSON.stringify(c));
+      setCfg(c);
+    }
+  });
+  if (!sb || session === undefined) return /*#__PURE__*/React.createElement("div", {
+    className: "centerpage"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "spin"
+  }));
+  if (!session) return /*#__PURE__*/React.createElement(Auth, {
+    sb: sb,
+    onReconfig: () => {
+      localStorage.removeItem('hb_cfg');
+      setCfg(null);
+      setSb(null);
+    }
+  });
+  return /*#__PURE__*/React.createElement(Main, {
+    sb: sb,
+    session: session
+  });
 }
 
 /* ============================================================
    SETUP (Supabase keys)
 ============================================================ */
-function Setup({onSave}){
-  const [url,setUrl]=useState(''); const [key,setKey]=useState(''); const [err,setErr]=useState('');
-  const go=()=>{
-    const u=url.trim().replace(/\/$/,''); const k=key.trim();
-    if(!/^https:\/\/.+\.supabase\.co$/.test(u)){ setErr('כתובת ה-Project URL לא נראית תקינה. היא אמורה להסתיים ב-supabase.co'); return; }
-    if(k.length<30){ setErr('מפתח ה-anon לא נראה תקין.'); return; }
-    onSave({url:u,key:k});
+function Setup({
+  onSave
+}) {
+  const [url, setUrl] = useState('');
+  const [key, setKey] = useState('');
+  const [err, setErr] = useState('');
+  const go = () => {
+    const u = url.trim().replace(/\/$/, '');
+    const k = key.trim();
+    if (!/^https:\/\/.+\.supabase\.co$/.test(u)) {
+      setErr('כתובת ה-Project URL לא נראית תקינה. היא אמורה להסתיים ב-supabase.co');
+      return;
+    }
+    if (k.length < 30) {
+      setErr('מפתח ה-anon לא נראה תקין.');
+      return;
+    }
+    onSave({
+      url: u,
+      key: k
+    });
   };
-  return (
-    <div className="centerpage">
-      <div className="card pad authcard">
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}><Logo/><b style={{fontSize:18}}>חיבור ראשוני</b></div>
-        <p className="muted">כדי לסנכרן את ההתקדמות בין המכשירים, חברו את האפליקציה לפרויקט ה-Supabase שלכם. הדביקו כאן את שני הערכים מתוך
-        <code style={{margin:'0 4px',background:'var(--surface-2)',padding:'1px 6px',borderRadius:5,fontFamily:'Space Mono',fontSize:12}}>Settings ▸ API</code>.</p>
-        {err && <div className="err" style={{marginTop:12}}>{err}</div>}
-        <div className="field" style={{marginTop:14}}>
-          <label>Project URL</label>
-          <input className="ltr" placeholder="https://xxxx.supabase.co" value={url} onChange={e=>setUrl(e.target.value)}/>
-        </div>
-        <div className="field">
-          <label>anon public key</label>
-          <input className="ltr" placeholder="eyJhbGciOi..." value={key} onChange={e=>setKey(e.target.value)}/>
-        </div>
-        <button className="btn btn-primary btn-block btn-lg" onClick={go}>התחברות לפרויקט</button>
-        <p className="muted" style={{marginTop:14,fontSize:12}}>הערכים נשמרים מקומית בדפדפן הזה בלבד. במדריך ההקמה יש הסבר צעד-אחר-צעד.</p>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "centerpage"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad authcard"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement("b", {
+    style: {
+      fontSize: 18
+    }
+  }, "חיבור ראשוני")), /*#__PURE__*/React.createElement("p", {
+    className: "muted"
+  }, "כדי לסנכרן את ההתקדמות בין המכשירים, חברו את האפליקציה לפרויקט ה-Supabase שלכם. הדביקו כאן את שני הערכים מתוך", /*#__PURE__*/React.createElement("code", {
+    style: {
+      margin: '0 4px',
+      background: 'var(--surface-2)',
+      padding: '1px 6px',
+      borderRadius: 5,
+      fontFamily: 'Space Mono',
+      fontSize: 12
+    }
+  }, "Settings ▸ API"), "."), err && /*#__PURE__*/React.createElement("div", {
+    className: "err",
+    style: {
+      marginTop: 12
+    }
+  }, err), /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Project URL"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr",
+    placeholder: "https://xxxx.supabase.co",
+    value: url,
+    onChange: e => setUrl(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "anon public key"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr",
+    placeholder: "eyJhbGciOi...",
+    value: key,
+    onChange: e => setKey(e.target.value)
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    onClick: go
+  }, "התחברות לפרויקט"), /*#__PURE__*/React.createElement("p", {
+    className: "muted",
+    style: {
+      marginTop: 14,
+      fontSize: 12
+    }
+  }, "הערכים נשמרים מקומית בדפדפן הזה בלבד. במדריך ההקמה יש הסבר צעד-אחר-צעד.")));
 }
 
 /* ============================================================
    AUTH
 ============================================================ */
-function Auth({sb,onReconfig}){
-  const [mode,setMode]=useState('login');
-  const [email,setEmail]=useState(''); const [pw,setPw]=useState('');
-  const [err,setErr]=useState(''); const [msg,setMsg]=useState(''); const [busy,setBusy]=useState(false);
-  const submit=async()=>{
-    setErr(''); setMsg(''); setBusy(true);
-    try{
-      if(mode==='login'){
-        const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
-        if(error) throw error;
-      }else{
-        const {data,error}=await sb.auth.signUp({email:email.trim(),password:pw});
-        if(error) throw error;
-        if(data.session===null) setMsg('נרשמת! אם הופעל אימות אימייל ב-Supabase, אשרו את הקישור שנשלח אליכם ואז התחברו.');
+function Auth({
+  sb,
+  onReconfig
+}) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    setErr('');
+    setMsg('');
+    setBusy(true);
+    try {
+      if (mode === 'login') {
+        const {
+          error
+        } = await sb.auth.signInWithPassword({
+          email: email.trim(),
+          password: pw
+        });
+        if (error) throw error;
+      } else {
+        const {
+          data,
+          error
+        } = await sb.auth.signUp({
+          email: email.trim(),
+          password: pw
+        });
+        if (error) throw error;
+        if (data.session === null) setMsg('נרשמת! אם הופעל אימות אימייל ב-Supabase, אשרו את הקישור שנשלח אליכם ואז התחברו.');
       }
-    }catch(e){ setErr(translateAuthErr(e.message)); }
+    } catch (e) {
+      setErr(translateAuthErr(e.message));
+    }
     setBusy(false);
   };
-  return (
-    <div className="centerpage">
-      <div className="card pad authcard">
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}><Logo/><div><b style={{fontSize:18,display:'block'}}>חוקה בכדוריד</b><span style={{fontSize:12,color:'var(--ink-soft)',fontWeight:600}}>מתאמן למבחן השופטים</span></div></div>
-        <h2 style={{fontSize:20,margin:'18px 0 16px'}}>{mode==='login'?'כניסה לחשבון':'יצירת חשבון'}</h2>
-        {err && <div className="err">{err}</div>}
-        {msg && <div className="ok-msg">{msg}</div>}
-        <div className="field"><label>אימייל</label><input className="ltr" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/></div>
-        <div className="field"><label>סיסמה</label><input className="ltr" type="password" autoComplete={mode==='login'?'current-password':'new-password'} value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/></div>
-        <button className="btn btn-primary btn-block btn-lg" disabled={busy||!email||!pw} onClick={submit}>{busy?'רגע...':(mode==='login'?'כניסה':'הרשמה')}</button>
-        <div className="switch">
-          {mode==='login'? <>אין לכם חשבון? <button onClick={()=>{setMode('signup');setErr('');setMsg('');}}>הרשמה</button></>
-                         : <>כבר רשומים? <button onClick={()=>{setMode('login');setErr('');setMsg('');}}>כניסה</button></>}
-        </div>
-        <div className="switch" style={{marginTop:8}}><button onClick={onReconfig} style={{color:'var(--ink-faint)'}}>החלפת פרויקט Supabase</button></div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "centerpage"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card pad authcard"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("b", {
+    style: {
+      fontSize: 18,
+      display: 'block'
+    }
+  }, "חוקה בכדוריד"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: 'var(--ink-soft)',
+      fontWeight: 600
+    }
+  }, "מתאמן למבחן השופטים"))), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: 20,
+      margin: '18px 0 16px'
+    }
+  }, mode === 'login' ? 'כניסה לחשבון' : 'יצירת חשבון'), err && /*#__PURE__*/React.createElement("div", {
+    className: "err"
+  }, err), msg && /*#__PURE__*/React.createElement("div", {
+    className: "ok-msg"
+  }, msg), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "אימייל"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr",
+    type: "email",
+    autoComplete: "email",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && submit()
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "סיסמה"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr",
+    type: "password",
+    autoComplete: mode === 'login' ? 'current-password' : 'new-password',
+    value: pw,
+    onChange: e => setPw(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && submit()
+  })), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    disabled: busy || !email || !pw,
+    onClick: submit
+  }, busy ? 'רגע...' : mode === 'login' ? 'כניסה' : 'הרשמה'), /*#__PURE__*/React.createElement("div", {
+    className: "switch"
+  }, mode === 'login' ? /*#__PURE__*/React.createElement(React.Fragment, null, "אין לכם חשבון? ", /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setMode('signup');
+      setErr('');
+      setMsg('');
+    }
+  }, "הרשמה")) : /*#__PURE__*/React.createElement(React.Fragment, null, "כבר רשומים? ", /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setMode('login');
+      setErr('');
+      setMsg('');
+    }
+  }, "כניסה"))), /*#__PURE__*/React.createElement("div", {
+    className: "switch",
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: onReconfig,
+    style: {
+      color: 'var(--ink-faint)'
+    }
+  }, "החלפת פרויקט Supabase"))));
 }
-function translateAuthErr(m){
-  if(/Invalid login/i.test(m)) return 'אימייל או סיסמה שגויים.';
-  if(/already registered/i.test(m)) return 'האימייל כבר רשום. נסו להתחבר.';
-  if(/Password should be at least/i.test(m)) return 'הסיסמה צריכה להיות באורך 6 תווים לפחות.';
-  if(/Email not confirmed/i.test(m)) return 'יש לאשר תחילה את האימייל שנשלח אליכם.';
+function translateAuthErr(m) {
+  if (/Invalid login/i.test(m)) return 'אימייל או סיסמה שגויים.';
+  if (/already registered/i.test(m)) return 'האימייל כבר רשום. נסו להתחבר.';
+  if (/Password should be at least/i.test(m)) return 'הסיסמה צריכה להיות באורך 6 תווים לפחות.';
+  if (/Email not confirmed/i.test(m)) return 'יש לאשר תחילה את האימייל שנשלח אליכם.';
   return m;
 }
 
 /* ============================================================
    MAIN (logged in)  — routing
 ============================================================ */
-function Main({sb,session}){
-  const [route,setRoute]=useState({name:'home'});
-  const go=(name,props={})=>{ window.scrollTo(0,0); setRoute({name,...props}); };
-  return (
-    <div className="app">
-      <header className="topbar"><div className="wrap row">
-        <button className="brand" onClick={()=>go('home')} style={{background:'none',border:'none',padding:0}}>
-          <Logo/><div style={{textAlign:'start'}}><b>חוקה בכדוריד</b><span>מתאמן למבחן</span></div>
-        </button>
-        <div className="spacer"/>
-        {route.name!=='home' && <button className="linkbtn" onClick={()=>go('home')}>‹ דף הבית</button>}
-        <button className="linkbtn" onClick={()=>sb.auth.signOut()}>יציאה</button>
-      </div></header>
-      <main className="wrap" style={{flex:1,paddingBottom:20}}>
-        {route.name==='home'    && <Home sb={sb} go={go}/>}
-        {route.name==='learn'   && <Learn sb={sb} go={go}/>}
-        {route.name==='examnew' && <ExamNew sb={sb} go={go}/>}
-        {route.name==='exam'    && <ExamRun sb={sb} go={go} session={route.session} qids={route.qids} duration={route.duration}/>}
-        {route.name==='result'  && <ExamResult sb={sb} go={go} sessionId={route.sessionId}/>}
-        {route.name==='history' && <History sb={sb} go={go}/>}
-      </main>
-      <div className="footnote">IHF Catalogue of Rules Questions · July 2025 · {TOTAL} שאלות</div>
-    </div>
-  );
+function Main({
+  sb,
+  session
+}) {
+  const [route, setRoute] = useState({
+    name: 'home'
+  });
+  const go = (name, props = {}) => {
+    window.scrollTo(0, 0);
+    setRoute({
+      name,
+      ...props
+    });
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "app"
+  }, /*#__PURE__*/React.createElement("header", {
+    className: "topbar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "wrap row"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "brand",
+    onClick: () => go('home'),
+    style: {
+      background: 'none',
+      border: 'none',
+      padding: 0
+    }
+  }, /*#__PURE__*/React.createElement(Logo, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'start'
+    }
+  }, /*#__PURE__*/React.createElement("b", null, "חוקה בכדוריד"), /*#__PURE__*/React.createElement("span", null, "מתאמן למבחן"))), /*#__PURE__*/React.createElement("div", {
+    className: "spacer"
+  }), route.name !== 'home' && /*#__PURE__*/React.createElement("button", {
+    className: "linkbtn",
+    onClick: () => go('home')
+  }, "‹ דף הבית"), /*#__PURE__*/React.createElement("button", {
+    className: "linkbtn",
+    onClick: () => sb.auth.signOut()
+  }, "יציאה"))), /*#__PURE__*/React.createElement("main", {
+    className: "wrap",
+    style: {
+      flex: 1,
+      paddingBottom: 20
+    }
+  }, route.name === 'home' && /*#__PURE__*/React.createElement(Home, {
+    sb: sb,
+    go: go
+  }), route.name === 'learn' && /*#__PURE__*/React.createElement(Learn, {
+    sb: sb,
+    go: go
+  }), route.name === 'examnew' && /*#__PURE__*/React.createElement(ExamNew, {
+    sb: sb,
+    go: go
+  }), route.name === 'exam' && /*#__PURE__*/React.createElement(ExamRun, {
+    sb: sb,
+    go: go,
+    session: route.session,
+    qids: route.qids,
+    duration: route.duration
+  }), route.name === 'result' && /*#__PURE__*/React.createElement(ExamResult, {
+    sb: sb,
+    go: go,
+    sessionId: route.sessionId
+  }), route.name === 'history' && /*#__PURE__*/React.createElement(History, {
+    sb: sb,
+    go: go
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "footnote"
+  }, "IHF Catalogue of Rules Questions · July 2025 · ", TOTAL, " שאלות"));
 }
 
 /* ============================================================
    HOME
 ============================================================ */
-function Home({sb,go}){
-  const [prog,setProg]=useState(null);
-  useEffect(()=>{ let on=true;
-    sb.from('learning_progress').select('*').maybeSingle().then(({data})=>{ if(on) setProg(data||{current_index:0,correct_count:0,wrong_count:0}); });
-    return ()=>{on=false};
-  },[sb]);
-  const pct = prog? Math.round(prog.current_index/TOTAL*100):0;
-  return (
-    <>
-      <div className="hero">
-        <h1>על מה נתאמן היום?</h1>
-        <p>מאגר רשמי של {TOTAL} שאלות חוקה. תשובה נכונה = בדיוק כל האפשרויות הנכונות סומנו.</p>
-      </div>
-      <div className="modegrid">
-        <button className="mode" onClick={()=>go('learn')}>
-          <div className="arc"><Arc color="#ec5a37"/></div>
-          <div className="tag">מצב למידה</div>
-          <h3>לימוד לפי הסדר</h3>
-          <p>עוברים שאלה-שאלה. טעות חושפת מיד את החוקים הרלוונטיים.</p>
-          <div className="go">המשך ‹ {prog? `${pct}%`:''}</div>
-        </button>
-        <button className="mode teal" onClick={()=>go('examnew')}>
-          <div className="arc"><Arc color="#0e7c86"/></div>
-          <div className="tag">מצב מבחן</div>
-          <h3>מבחן מתוזמן</h3>
-          <p>שאלות רנדומליות, ספירת זמן, וחשיפת התשובות רק בסיום.</p>
-          <div className="go">צרו מבחן ‹</div>
-        </button>
-      </div>
-      {prog && <div className="statbar">
-        <div className="chipstat">התקדמות בלמידה <b>{pct}%</b></div>
-        <div className="chipstat" style={{color:'var(--correct)'}}>נכונות <b style={{color:'var(--correct)'}}>{prog.correct_count}</b></div>
-        <div className="chipstat" style={{color:'var(--wrong)'}}>שגויות <b style={{color:'var(--wrong)'}}>{prog.wrong_count}</b></div>
-      </div>}
-      <div style={{marginTop:22}}>
-        <button className="btn btn-ghost btn-block" onClick={()=>go('history')}>מבחנים קודמים ›</button>
-      </div>
-    </>
-  );
+function Home({
+  sb,
+  go
+}) {
+  const [prog, setProg] = useState(null);
+  useEffect(() => {
+    let on = true;
+    sb.from('learning_progress').select('*').maybeSingle().then(({
+      data
+    }) => {
+      if (on) setProg(data || {
+        current_index: 0,
+        correct_count: 0,
+        wrong_count: 0
+      });
+    });
+    return () => {
+      on = false;
+    };
+  }, [sb]);
+  const pct = prog ? Math.round(prog.current_index / TOTAL * 100) : 0;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "hero"
+  }, /*#__PURE__*/React.createElement("h1", null, "על מה נתאמן היום?"), /*#__PURE__*/React.createElement("p", null, "מאגר רשמי של ", TOTAL, " שאלות חוקה. תשובה נכונה = בדיוק כל האפשרויות הנכונות סומנו.")), /*#__PURE__*/React.createElement("div", {
+    className: "modegrid"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "mode",
+    onClick: () => go('learn')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "arc"
+  }, /*#__PURE__*/React.createElement(Arc, {
+    color: "#ec5a37"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "tag"
+  }, "מצב למידה"), /*#__PURE__*/React.createElement("h3", null, "לימוד לפי הסדר"), /*#__PURE__*/React.createElement("p", null, "עוברים שאלה-שאלה. טעות חושפת מיד את החוקים הרלוונטיים."), /*#__PURE__*/React.createElement("div", {
+    className: "go"
+  }, "המשך ‹ ", prog ? `${pct}%` : '')), /*#__PURE__*/React.createElement("button", {
+    className: "mode teal",
+    onClick: () => go('examnew')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "arc"
+  }, /*#__PURE__*/React.createElement(Arc, {
+    color: "#0e7c86"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "tag"
+  }, "מצב מבחן"), /*#__PURE__*/React.createElement("h3", null, "מבחן מתוזמן"), /*#__PURE__*/React.createElement("p", null, "שאלות רנדומליות, ספירת זמן, וחשיפת התשובות רק בסיום."), /*#__PURE__*/React.createElement("div", {
+    className: "go"
+  }, "צרו מבחן ‹"))), prog && /*#__PURE__*/React.createElement("div", {
+    className: "statbar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "chipstat"
+  }, "התקדמות בלמידה ", /*#__PURE__*/React.createElement("b", null, pct, "%")), /*#__PURE__*/React.createElement("div", {
+    className: "chipstat",
+    style: {
+      color: 'var(--correct)'
+    }
+  }, "נכונות ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: 'var(--correct)'
+    }
+  }, prog.correct_count)), /*#__PURE__*/React.createElement("div", {
+    className: "chipstat",
+    style: {
+      color: 'var(--wrong)'
+    }
+  }, "שגויות ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: 'var(--wrong)'
+    }
+  }, prog.wrong_count))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 22
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost btn-block",
+    onClick: () => go('history')
+  }, "מבחנים קודמים ›")));
 }
 
 /* ============================================================
    LEARN
 ============================================================ */
-function Learn({sb,go}){
-  const [prog,setProg]=useState(null);
-  const [sel,setSel]=useState([]);
-  const [graded,setGraded]=useState(null); // null | {correct:bool}
-  const [flash,setFlash]=useState(false);
-  const [busy,setBusy]=useState(false);
-  const flashTimer=useRef(null);
-  const pendingNext=useRef(null);
-
-  useEffect(()=>{ let on=true;
-    sb.from('learning_progress').select('*').maybeSingle().then(async({data})=>{
-      if(!data){ await sb.from('learning_progress').insert({current_index:0,correct_count:0,wrong_count:0}); data={current_index:0,correct_count:0,wrong_count:0}; }
-      if(on) setProg(data);
+function Learn({
+  sb,
+  go
+}) {
+  const [prog, setProg] = useState(null);
+  const [sel, setSel] = useState([]);
+  const [graded, setGraded] = useState(null); // null | {correct:bool}
+  const [flash, setFlash] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const flashTimer = useRef(null);
+  const pendingNext = useRef(null);
+  useEffect(() => {
+    let on = true;
+    sb.from('learning_progress').select('*').maybeSingle().then(async ({
+      data
+    }) => {
+      if (!data) {
+        await sb.from('learning_progress').insert({
+          current_index: 0,
+          correct_count: 0,
+          wrong_count: 0
+        });
+        data = {
+          current_index: 0,
+          correct_count: 0,
+          wrong_count: 0
+        };
+      }
+      if (on) setProg(data);
     });
-    return ()=>{ on=false; if(flashTimer.current) clearTimeout(flashTimer.current); };
-  },[sb]);
-
-  if(!prog) return <div className="spin"/>;
-  const idx=prog.current_index;
-  const done = idx>=TOTAL;
-  const q = done?null:QUIZ[idx];
-
-  const toggle=(L)=>{ if(graded) return; setSel(s=> s.includes(L)? s.filter(x=>x!==L):[...s,L]); };
-
-  const advance=async(np)=>{
-    if(flashTimer.current) clearTimeout(flashTimer.current);
-    setFlash(false); setGraded(null); setSel([]);
-    setProg(np);
-    await sb.from('learning_progress').update({current_index:np.current_index,correct_count:np.correct_count,wrong_count:np.wrong_count,updated_at:new Date().toISOString()}).eq('user_id',(await sb.auth.getUser()).data.user.id);
+    return () => {
+      on = false;
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+    };
+  }, [sb]);
+  if (!prog) return /*#__PURE__*/React.createElement("div", {
+    className: "spin"
+  });
+  const idx = prog.current_index;
+  const done = idx >= TOTAL;
+  const q = done ? null : QUIZ[idx];
+  const toggle = L => {
+    if (graded) return;
+    setSel(s => s.includes(L) ? s.filter(x => x !== L) : [...s, L]);
   };
-
-  const submit=async()=>{
-    if(sel.length===0||busy) return; setBusy(true);
-    const correct = eqSet(sel,q.correct);
-    const np = {current_index:idx+1, correct_count:prog.correct_count+(correct?1:0), wrong_count:prog.wrong_count+(correct?0:1)};
+  const advance = async np => {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    setFlash(false);
+    setGraded(null);
+    setSel([]);
+    setProg(np);
+    await sb.from('learning_progress').update({
+      current_index: np.current_index,
+      correct_count: np.correct_count,
+      wrong_count: np.wrong_count,
+      updated_at: new Date().toISOString()
+    }).eq('user_id', (await sb.auth.getUser()).data.user.id);
+  };
+  const submit = async () => {
+    if (sel.length === 0 || busy) return;
+    setBusy(true);
+    const correct = eqSet(sel, q.correct);
+    const np = {
+      current_index: idx + 1,
+      correct_count: prog.correct_count + (correct ? 1 : 0),
+      wrong_count: prog.wrong_count + (correct ? 0 : 1)
+    };
     pendingNext.current = np;
-    sb.from('learning_answers').insert({question_id:q.id,selected:sel,is_correct:correct}); // fire & forget
+    sb.from('learning_answers').insert({
+      question_id: q.id,
+      selected: sel,
+      is_correct: correct
+    }); // fire & forget
     setBusy(false);
-    if(correct){
-      setGraded({correct:true}); setFlash(true);
-      flashTimer.current=setTimeout(()=>advance(np),2000);
-    }else{
-      setGraded({correct:false});
+    if (correct) {
+      setGraded({
+        correct: true
+      });
+      setFlash(true);
+      flashTimer.current = setTimeout(() => advance(np), 2000);
+    } else {
+      setGraded({
+        correct: false
+      });
     }
   };
-  const cont=()=> advance(pendingNext.current);
-
-  const resetAll=async()=>{
-    const u=(await sb.auth.getUser()).data.user.id;
-    const np={current_index:0,correct_count:0,wrong_count:0};
-    await sb.from('learning_progress').update({...np,updated_at:new Date().toISOString()}).eq('user_id',u);
-    setProg(np); setSel([]); setGraded(null);
+  const cont = () => advance(pendingNext.current);
+  const resetAll = async () => {
+    const u = (await sb.auth.getUser()).data.user.id;
+    const np = {
+      current_index: 0,
+      correct_count: 0,
+      wrong_count: 0
+    };
+    await sb.from('learning_progress').update({
+      ...np,
+      updated_at: new Date().toISOString()
+    }).eq('user_id', u);
+    setProg(np);
+    setSel([]);
+    setGraded(null);
   };
-
-  const pct = Math.round(idx/TOTAL*100);
-
-  return (
-    <>
-      <div className="lhead">
-        <div className="ptrack"><div className="pfill" style={{width:`${pct}%`}}/></div>
-        <div className="pmeta">
-          <span className="pct">{Math.min(idx,TOTAL)}/{TOTAL} · {pct}%</span>
-          <div className="counters">
-            <span className="cnt ok">נכונות <b>{prog.correct_count}</b></span>
-            <span className="cnt no">שגויות <b>{prog.wrong_count}</b></span>
-          </div>
-        </div>
-      </div>
-
-      {done ? (
-        <div className="card pad" style={{marginTop:18,textAlign:'center'}}>
-          <div style={{display:'flex',justifyContent:'center',marginBottom:8}}><Check s={0}/><div style={{width:84,height:84,borderRadius:'50%',background:'var(--correct)',display:'flex',alignItems:'center',justifyContent:'center'}}><Check s={48}/></div></div>
-          <h2 style={{margin:'14px 0 6px'}}>סיימת את כל המאגר! 🤾</h2>
-          <p className="muted">ענית על כל {TOTAL} השאלות. {prog.correct_count} נכונות, {prog.wrong_count} שגויות.</p>
-          <div style={{display:'flex',gap:10,marginTop:18,justifyContent:'center',flexWrap:'wrap'}}>
-            <button className="btn btn-primary" onClick={resetAll}>סבב חדש מההתחלה</button>
-            <button className="btn btn-ghost" onClick={()=>go('home')}>דף הבית</button>
-          </div>
-        </div>
-      ) : (
-        <div className="card pad" style={{marginTop:18}}>
-          <div className="qmeta">
-            <span className="qid">{q.id}</span>
-            <span className="qchapter">{chapterLabel(q)}</span>
-            {q.correct.length>1 && <span className="multi">יותר מתשובה אחת נכונה</span>}
-          </div>
-          <p className="stem ltr">{q.stem}</p>
-          <div className="opts">
-            {letters(q).map(L=>{
-              let cls='opt';
-              if(!graded){ if(sel.includes(L)) cls+=' sel'; }
-              else{
-                const isC=q.correct.includes(L), picked=sel.includes(L);
-                if(isC&&picked) cls+=' correct';
-                else if(isC&&!picked) cls+=' misscorrect';
-                else if(!isC&&picked) cls+=' wrongsel';
-              }
-              return (
-                <button key={L} className={cls} disabled={!!graded} onClick={()=>toggle(L)}>
-                  <span className="box">{L}</span>
-                  <span className="otext">{q.options[L]}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {!graded && (
-            <div className="qfoot">
-              <button className="btn btn-primary" disabled={sel.length===0||busy} onClick={submit}>שגר</button>
-              <span className="muted" style={{fontSize:12.5}}>סמנו את כל התשובות הנכונות</span>
-            </div>
-          )}
-
-          {graded && !graded.correct && (
-            <>
-              <div className="verdict no">✗ תשובה שגויה</div>
-              <div className="rules">
-                <div className="lbl"><Arc size={14} color="#c8401f"/> חוקים רלוונטיים</div>
-                <div className="ref">{q.rules}</div>
-              </div>
-              <div className="qfoot" style={{marginTop:18}}>
-                <button className="btn btn-teal" onClick={cont}>המשך ›</button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      <div style={{marginTop:16,textAlign:'center'}}>
-        {!done && <button className="linkbtn" onClick={resetAll}>איפוס התקדמות הלמידה</button>}
-      </div>
-
-      {flash && (
-        <div className="flash" onClick={()=>advance(pendingNext.current)}>
-          <div className="badge"><Check s={64}/></div>
-          <div className="hint">נכון! ממשיכים…</div>
-        </div>
-      )}
-    </>
-  );
+  const pct = Math.round(idx / TOTAL * 100);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "lhead"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ptrack"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pfill",
+    style: {
+      width: `${pct}%`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "pmeta"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "pct"
+  }, Math.min(idx, TOTAL), "/", TOTAL, " · ", pct, "%"), /*#__PURE__*/React.createElement("div", {
+    className: "counters"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "cnt ok"
+  }, "נכונות ", /*#__PURE__*/React.createElement("b", null, prog.correct_count)), /*#__PURE__*/React.createElement("span", {
+    className: "cnt no"
+  }, "שגויות ", /*#__PURE__*/React.createElement("b", null, prog.wrong_count))))), done ? /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginTop: 18,
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement(Check, {
+    s: 0
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 84,
+      height: 84,
+      borderRadius: '50%',
+      background: 'var(--correct)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, /*#__PURE__*/React.createElement(Check, {
+    s: 48
+  }))), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: '14px 0 6px'
+    }
+  }, "סיימת את כל המאגר! 🤾"), /*#__PURE__*/React.createElement("p", {
+    className: "muted"
+  }, "ענית על כל ", TOTAL, " השאלות. ", prog.correct_count, " נכונות, ", prog.wrong_count, " שגויות."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      marginTop: 18,
+      justifyContent: 'center',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    onClick: resetAll
+  }, "סבב חדש מההתחלה"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית"))) : /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginTop: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "qmeta"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "qid"
+  }, q.id), /*#__PURE__*/React.createElement("span", {
+    className: "qchapter"
+  }, chapterLabel(q)), q.correct.length > 1 && /*#__PURE__*/React.createElement("span", {
+    className: "multi"
+  }, "יותר מתשובה אחת נכונה")), /*#__PURE__*/React.createElement("p", {
+    className: "stem ltr"
+  }, q.stem), /*#__PURE__*/React.createElement("div", {
+    className: "opts"
+  }, letters(q).map(L => {
+    let cls = 'opt';
+    if (!graded) {
+      if (sel.includes(L)) cls += ' sel';
+    } else {
+      const isC = q.correct.includes(L),
+        picked = sel.includes(L);
+      if (isC && picked) cls += ' correct';else if (isC && !picked) cls += ' misscorrect';else if (!isC && picked) cls += ' wrongsel';
+    }
+    return /*#__PURE__*/React.createElement("button", {
+      key: L,
+      className: cls,
+      disabled: !!graded,
+      onClick: () => toggle(L)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "box"
+    }, L), /*#__PURE__*/React.createElement("span", {
+      className: "otext"
+    }, q.options[L]));
+  })), !graded && /*#__PURE__*/React.createElement("div", {
+    className: "qfoot"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    disabled: sel.length === 0 || busy,
+    onClick: submit
+  }, "שגר"), /*#__PURE__*/React.createElement("span", {
+    className: "muted",
+    style: {
+      fontSize: 12.5
+    }
+  }, "סמנו את כל התשובות הנכונות")), graded && !graded.correct && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "verdict no"
+  }, "✗ תשובה שגויה"), /*#__PURE__*/React.createElement("div", {
+    className: "rules"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lbl"
+  }, /*#__PURE__*/React.createElement(Arc, {
+    size: 14,
+    color: "#c8401f"
+  }), " חוקים רלוונטיים"), /*#__PURE__*/React.createElement("div", {
+    className: "ref"
+  }, q.rules)), /*#__PURE__*/React.createElement("div", {
+    className: "qfoot",
+    style: {
+      marginTop: 18
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-teal",
+    onClick: cont
+  }, "המשך ›")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 16,
+      textAlign: 'center'
+    }
+  }, !done && /*#__PURE__*/React.createElement("button", {
+    className: "linkbtn",
+    onClick: resetAll
+  }, "איפוס התקדמות הלמידה")), flash && /*#__PURE__*/React.createElement("div", {
+    className: "flash",
+    onClick: () => advance(pendingNext.current)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "badge"
+  }, /*#__PURE__*/React.createElement(Check, {
+    s: 64
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "hint"
+  }, "נכון! ממשיכים…")));
 }
 
 /* ============================================================
    EXAM — create
 ============================================================ */
-function ExamNew({sb,go}){
-  const [n,setN]=useState(20); const [min,setMin]=useState(20); const [busy,setBusy]=useState(false); const [err,setErr]=useState('');
-  const create=async()=>{
+function ExamNew({
+  sb,
+  go
+}) {
+  const [n, setN] = useState(20);
+  const [min, setMin] = useState(20);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const create = async () => {
     setErr('');
-    const num=Math.max(1,Math.min(TOTAL,Math.round(n))); const mins=Math.max(1,Math.round(min));
-    if(!num||!mins){ setErr('נא להזין כמות שאלות ומספר דקות.'); return; }
+    const num = Math.max(1, Math.min(TOTAL, Math.round(n)));
+    const mins = Math.max(1, Math.round(min));
+    if (!num || !mins) {
+      setErr('נא להזין כמות שאלות ומספר דקות.');
+      return;
+    }
     setBusy(true);
-    const qids=shuffle(QUIZ.map(q=>q.id)).slice(0,num);
-    const dur=mins*60;
-    const {data,error}=await sb.from('exam_sessions').insert({num_questions:num,duration_seconds:dur,question_ids:qids}).select().single();
+    const qids = shuffle(QUIZ.map(q => q.id)).slice(0, num);
+    const dur = mins * 60;
+    const {
+      data,
+      error
+    } = await sb.from('exam_sessions').insert({
+      num_questions: num,
+      duration_seconds: dur,
+      question_ids: qids
+    }).select().single();
     setBusy(false);
-    if(error){ setErr('שגיאה ביצירת המבחן: '+error.message); return; }
-    go('exam',{session:data,qids,duration:dur});
+    if (error) {
+      setErr('שגיאה ביצירת המבחן: ' + error.message);
+      return;
+    }
+    go('exam', {
+      session: data,
+      qids,
+      duration: dur
+    });
   };
-  return (
-    <>
-      <div className="hero"><h1>מבחן חדש</h1><p>בחרו כמה שאלות וכמה זמן. השאלות ייבחרו אקראית מתוך כל המאגר.</p></div>
-      <div className="card pad">
-        {err && <div className="err">{err}</div>}
-        <div className="numgrid">
-          <div className="field"><label>מספר שאלות (עד {TOTAL})</label>
-            <input className="ltr mono" type="number" min="1" max={TOTAL} value={n} onChange={e=>setN(e.target.value)}/></div>
-          <div className="field"><label>משך בדקות</label>
-            <input className="ltr mono" type="number" min="1" value={min} onChange={e=>setMin(e.target.value)}/></div>
-        </div>
-        <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'4px 0 18px'}}>
-          {[[10,10],[20,20],[30,30],[50,45]].map(([a,b])=>(
-            <button key={a} className="btn btn-ghost" style={{padding:'8px 14px',fontSize:13}} onClick={()=>{setN(a);setMin(b);}}>{a} שאלות · {b} דק׳</button>
-          ))}
-        </div>
-        <button className="btn btn-primary btn-block btn-lg" disabled={busy} onClick={create}>{busy?'יוצר…':'התחלת המבחן'}</button>
-        <p className="muted" style={{marginTop:14,fontSize:12.5}}>במהלך המבחן לא יוצגו מספרי השאלות ולא התשובות. שאלה שלא נענתה תיחשב כשגויה.</p>
-      </div>
-    </>
-  );
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "hero"
+  }, /*#__PURE__*/React.createElement("h1", null, "מבחן חדש"), /*#__PURE__*/React.createElement("p", null, "בחרו כמה שאלות וכמה זמן. השאלות ייבחרו אקראית מתוך כל המאגר.")), /*#__PURE__*/React.createElement("div", {
+    className: "card pad"
+  }, err && /*#__PURE__*/React.createElement("div", {
+    className: "err"
+  }, err), /*#__PURE__*/React.createElement("div", {
+    className: "numgrid"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "מספר שאלות (עד ", TOTAL, ")"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    max: TOTAL,
+    value: n,
+    onChange: e => setN(e.target.value)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "משך בדקות"), /*#__PURE__*/React.createElement("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    value: min,
+    onChange: e => setMin(e.target.value)
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      margin: '4px 0 18px'
+    }
+  }, [[10, 10], [20, 20], [30, 30], [50, 45]].map(([a, b]) => /*#__PURE__*/React.createElement("button", {
+    key: a,
+    className: "btn btn-ghost",
+    style: {
+      padding: '8px 14px',
+      fontSize: 13
+    },
+    onClick: () => {
+      setN(a);
+      setMin(b);
+    }
+  }, a, " שאלות · ", b, " דק׳"))), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    disabled: busy,
+    onClick: create
+  }, busy ? 'יוצר…' : 'התחלת המבחן'), /*#__PURE__*/React.createElement("p", {
+    className: "muted",
+    style: {
+      marginTop: 14,
+      fontSize: 12.5
+    }
+  }, "במהלך המבחן לא יוצגו מספרי השאלות ולא התשובות. שאלה שלא נענתה תיחשב כשגויה.")));
 }
 
 /* ============================================================
    EXAM — run
 ============================================================ */
-function ExamRun({sb,go,session,qids,duration}){
-  const questions = qids.map(id=>QBY[id]);
-  const [i,setI]=useState(0);
-  const [ans,setAns]=useState({}); // qid -> [letters]
-  const [left,setLeft]=useState(duration);
-  const [submitting,setSubmitting]=useState(false);
-  const submitRef=useRef(false);
-
-  useEffect(()=>{
-    const t=setInterval(()=> setLeft(l=>{ if(l<=1){ clearInterval(t); doSubmit(true); return 0; } return l-1; }),1000);
-    return ()=>clearInterval(t);
-  },[]);
-
-  const q=questions[i];
-  const sel=ans[q.id]||[];
-  const toggle=(L)=> setAns(a=>{ const cur=a[q.id]||[]; return {...a,[q.id]: cur.includes(L)? cur.filter(x=>x!==L):[...cur,L]}; });
-
-  const doSubmit=async(auto=false)=>{
-    if(submitRef.current) return; submitRef.current=true; setSubmitting(true);
-    let correctN=0;
-    const rows=questions.map(qq=>{ const s=ans[qq.id]||[]; const ok=s.length>0 && eqSet(s,qq.correct); if(ok) correctN++; return {session_id:session.id,question_id:qq.id,selected:s,is_correct:ok}; });
+function ExamRun({
+  sb,
+  go,
+  session,
+  qids,
+  duration
+}) {
+  const questions = qids.map(id => QBY[id]);
+  const [i, setI] = useState(0);
+  const [ans, setAns] = useState({}); // qid -> [letters]
+  const [left, setLeft] = useState(duration);
+  const [submitting, setSubmitting] = useState(false);
+  const submitRef = useRef(false);
+  useEffect(() => {
+    const t = setInterval(() => setLeft(l => {
+      if (l <= 1) {
+        clearInterval(t);
+        doSubmit(true);
+        return 0;
+      }
+      return l - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const q = questions[i];
+  const sel = ans[q.id] || [];
+  const toggle = L => setAns(a => {
+    const cur = a[q.id] || [];
+    return {
+      ...a,
+      [q.id]: cur.includes(L) ? cur.filter(x => x !== L) : [...cur, L]
+    };
+  });
+  const doSubmit = async (auto = false) => {
+    if (submitRef.current) return;
+    submitRef.current = true;
+    setSubmitting(true);
+    let correctN = 0;
+    const rows = questions.map(qq => {
+      const s = ans[qq.id] || [];
+      const ok = s.length > 0 && eqSet(s, qq.correct);
+      if (ok) correctN++;
+      return {
+        session_id: session.id,
+        question_id: qq.id,
+        selected: s,
+        is_correct: ok
+      };
+    });
     await sb.from('exam_answers').insert(rows);
-    await sb.from('exam_sessions').update({finished_at:new Date().toISOString(),score_correct:correctN,score_total:questions.length}).eq('id',session.id);
-    go('result',{sessionId:session.id});
+    await sb.from('exam_sessions').update({
+      finished_at: new Date().toISOString(),
+      score_correct: correctN,
+      score_total: questions.length
+    }).eq('id', session.id);
+    go('result', {
+      sessionId: session.id
+    });
   };
-
-  const answeredCount = questions.filter(qq=>(ans[qq.id]||[]).length>0).length;
-  const warn = left<=30;
-
-  return (
-    <>
-      <div className="examtop">
-        <div className={'clock'+(warn?' warn':'')}>⏱ {fmtClock(left)}</div>
-        <div className="examnav"><span>נענו</span><span className="mono">{answeredCount}/{questions.length}</span></div>
-      </div>
-
-      <div className="card pad" style={{marginTop:16}}>
-        <div className="qmeta">
-          <span className="qid teal">שאלה {i+1}</span>
-          {q.correct.length>1 && <span className="multi">יותר מתשובה אחת נכונה</span>}
-        </div>
-        <p className="stem ltr">{q.stem}</p>
-        <div className="opts">
-          {letters(q).map(L=>(
-            <button key={L} className={'opt'+(sel.includes(L)?' sel':'')} onClick={()=>toggle(L)}>
-              <span className="box">{L}</span><span className="otext">{q.options[L]}</span>
-            </button>
-          ))}
-        </div>
-        <div className="navrow">
-          <button className="btn btn-ghost" disabled={i===0} onClick={()=>{setI(i-1);window.scrollTo(0,0);}}>‹ הקודמת</button>
-          {i<questions.length-1
-            ? <button className="btn btn-primary" onClick={()=>{setI(i+1);window.scrollTo(0,0);}}>הבאה ›</button>
-            : <button className="btn btn-teal" disabled={submitting} onClick={()=>doSubmit(false)}>{submitting?'מסיים…':'סיום המבחן'}</button>}
-        </div>
-      </div>
-
-      <div className="card pad" style={{marginTop:14}}>
-        <div className="muted" style={{marginBottom:10,fontWeight:600}}>ניווט מהיר</div>
-        <div className="palette">
-          {questions.map((qq,k)=>(
-            <button key={k} className={'pcell'+((ans[qq.id]||[]).length>0?' answered':'')+(k===i?' current':'')} onClick={()=>{setI(k);window.scrollTo(0,0);}}>{k+1}</button>
-          ))}
-        </div>
-        <button className="btn btn-teal btn-block" style={{marginTop:16}} disabled={submitting} onClick={()=>doSubmit(false)}>{submitting?'מסיים…':'סיום והצגת ציון'}</button>
-      </div>
-    </>
-  );
+  const answeredCount = questions.filter(qq => (ans[qq.id] || []).length > 0).length;
+  const warn = left <= 30;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "examtop"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'clock' + (warn ? ' warn' : '')
+  }, "⏱ ", fmtClock(left)), /*#__PURE__*/React.createElement("div", {
+    className: "examnav"
+  }, /*#__PURE__*/React.createElement("span", null, "נענו"), /*#__PURE__*/React.createElement("span", {
+    className: "mono"
+  }, answeredCount, "/", questions.length))), /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "qmeta"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "qid teal"
+  }, "שאלה ", i + 1), q.correct.length > 1 && /*#__PURE__*/React.createElement("span", {
+    className: "multi"
+  }, "יותר מתשובה אחת נכונה")), /*#__PURE__*/React.createElement("p", {
+    className: "stem ltr"
+  }, q.stem), /*#__PURE__*/React.createElement("div", {
+    className: "opts"
+  }, letters(q).map(L => /*#__PURE__*/React.createElement("button", {
+    key: L,
+    className: 'opt' + (sel.includes(L) ? ' sel' : ''),
+    onClick: () => toggle(L)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "box"
+  }, L), /*#__PURE__*/React.createElement("span", {
+    className: "otext"
+  }, q.options[L])))), /*#__PURE__*/React.createElement("div", {
+    className: "navrow"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    disabled: i === 0,
+    onClick: () => {
+      setI(i - 1);
+      window.scrollTo(0, 0);
+    }
+  }, "‹ הקודמת"), i < questions.length - 1 ? /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    onClick: () => {
+      setI(i + 1);
+      window.scrollTo(0, 0);
+    }
+  }, "הבאה ›") : /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-teal",
+    disabled: submitting,
+    onClick: () => doSubmit(false)
+  }, submitting ? 'מסיים…' : 'סיום המבחן'))), /*#__PURE__*/React.createElement("div", {
+    className: "card pad",
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "muted",
+    style: {
+      marginBottom: 10,
+      fontWeight: 600
+    }
+  }, "ניווט מהיר"), /*#__PURE__*/React.createElement("div", {
+    className: "palette"
+  }, questions.map((qq, k) => /*#__PURE__*/React.createElement("button", {
+    key: k,
+    className: 'pcell' + ((ans[qq.id] || []).length > 0 ? ' answered' : '') + (k === i ? ' current' : ''),
+    onClick: () => {
+      setI(k);
+      window.scrollTo(0, 0);
+    }
+  }, k + 1))), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-teal btn-block",
+    style: {
+      marginTop: 16
+    },
+    disabled: submitting,
+    onClick: () => doSubmit(false)
+  }, submitting ? 'מסיים…' : 'סיום והצגת ציון')));
 }
 
 /* ============================================================
    EXAM — result
 ============================================================ */
-function ExamResult({sb,go,sessionId}){
-  const [sess,setSess]=useState(null);
-  const [rows,setRows]=useState(null);
-  useEffect(()=>{ let on=true;
-    (async()=>{
-      const {data:s}=await sb.from('exam_sessions').select('*').eq('id',sessionId).single();
-      const {data:a}=await sb.from('exam_answers').select('*').eq('session_id',sessionId);
-      if(!on) return;
+function ExamResult({
+  sb,
+  go,
+  sessionId
+}) {
+  const [sess, setSess] = useState(null);
+  const [rows, setRows] = useState(null);
+  useEffect(() => {
+    let on = true;
+    (async () => {
+      const {
+        data: s
+      } = await sb.from('exam_sessions').select('*').eq('id', sessionId).single();
+      const {
+        data: a
+      } = await sb.from('exam_answers').select('*').eq('session_id', sessionId);
+      if (!on) return;
       setSess(s);
-      const order=s.question_ids;
-      setRows((a||[]).sort((x,y)=>order.indexOf(x.question_id)-order.indexOf(y.question_id)));
+      const order = s.question_ids;
+      setRows((a || []).sort((x, y) => order.indexOf(x.question_id) - order.indexOf(y.question_id)));
     })();
-    return ()=>{on=false};
-  },[sb,sessionId]);
-  if(!sess||!rows) return <div className="spin"/>;
-  const total=sess.score_total??rows.length;
-  const correct=sess.score_correct??rows.filter(r=>r.is_correct).length;
-  const pct=Math.round(correct/total*100);
-  const col = pct>=80?'var(--correct)': pct>=60?'var(--gold)':'var(--wrong)';
-  const R=52, C=2*Math.PI*R, off=C*(1-pct/100);
-  return (
-    <>
-      <div className="card" style={{marginTop:18}}>
-        <div className="score">
-          <svg className="ring" width="130" height="130" viewBox="0 0 130 130">
-            <circle cx="65" cy="65" r={R} fill="none" stroke="var(--court-line)" strokeWidth="10"/>
-            <circle cx="65" cy="65" r={R} fill="none" stroke={col} strokeWidth="10" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={off} transform="rotate(-90 65 65)"/>
-            <text x="65" y="60" textAnchor="middle" fontFamily="Space Mono" fontWeight="700" fontSize="26" fill="var(--ink)">{pct}%</text>
-            <text x="65" y="80" textAnchor="middle" fontFamily="Rubik" fontSize="11" fill="var(--ink-soft)">ציון</text>
-          </svg>
-          <div className="big" style={{color:col}}>{correct}<span style={{color:'var(--ink-faint)',fontSize:28}}>/{total}</span></div>
-          <div className="lbl">שאלות נכונות</div>
-          <div className="sub">{new Date(sess.started_at).toLocaleString('he-IL')}</div>
-        </div>
-      </div>
-
-      <h2 style={{fontSize:18,margin:'22px 0 4px'}}>פירוט השאלות</h2>
-      <div className="rev">
-        {rows.map((r,k)=>{
-          const q=QBY[r.question_id]; const empty=r.selected.length===0;
-          return (
-            <div key={k} className={'card pad revq '+(r.is_correct?'ok':'no')}>
-              <span className={'revtag '+(r.is_correct?'ok':'no')}>{r.is_correct?'✓ נכון':(empty?'— לא נענתה':'✗ שגוי')}</span>
-              <div className="qmeta" style={{marginBottom:10}}><span className="qid">{q.id}</span><span className="qchapter">{chapterLabel(q)}</span></div>
-              <p className="stem ltr" style={{fontSize:15,marginBottom:12}}>{q.stem}</p>
-              <div className="opts">
-                {letters(q).map(L=>{
-                  const isC=q.correct.includes(L), picked=r.selected.includes(L);
-                  let cls='opt';
-                  if(isC&&picked) cls+=' correct';
-                  else if(isC&&!picked) cls+=' misscorrect';
-                  else if(!isC&&picked) cls+=' wrongsel';
-                  return <div key={L} className={cls}><span className="box">{L}</span><span className="otext">{q.options[L]}</span></div>;
-                })}
-              </div>
-              <div className="rules" style={{borderColor:'var(--teal)',background:'var(--teal-tint)'}}>
-                <div className="lbl" style={{color:'var(--teal)'}}>חוקים רלוונטיים</div>
-                <div className="ref">{q.rules}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      <div style={{display:'flex',gap:10,margin:'22px 0',flexWrap:'wrap'}}>
-        <button className="btn btn-primary" onClick={()=>go('examnew')}>מבחן נוסף</button>
-        <button className="btn btn-ghost" onClick={()=>go('home')}>דף הבית</button>
-      </div>
-    </>
-  );
+    return () => {
+      on = false;
+    };
+  }, [sb, sessionId]);
+  if (!sess || !rows) return /*#__PURE__*/React.createElement("div", {
+    className: "spin"
+  });
+  const total = sess.score_total ?? rows.length;
+  const correct = sess.score_correct ?? rows.filter(r => r.is_correct).length;
+  const pct = Math.round(correct / total * 100);
+  const col = pct >= 80 ? 'var(--correct)' : pct >= 60 ? 'var(--gold)' : 'var(--wrong)';
+  const R = 52,
+    C = 2 * Math.PI * R,
+    off = C * (1 - pct / 100);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginTop: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "score"
+  }, /*#__PURE__*/React.createElement("svg", {
+    className: "ring",
+    width: "130",
+    height: "130",
+    viewBox: "0 0 130 130"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "65",
+    cy: "65",
+    r: R,
+    fill: "none",
+    stroke: "var(--court-line)",
+    strokeWidth: "10"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "65",
+    cy: "65",
+    r: R,
+    fill: "none",
+    stroke: col,
+    strokeWidth: "10",
+    strokeLinecap: "round",
+    strokeDasharray: C,
+    strokeDashoffset: off,
+    transform: "rotate(-90 65 65)"
+  }), /*#__PURE__*/React.createElement("text", {
+    x: "65",
+    y: "60",
+    textAnchor: "middle",
+    fontFamily: "Space Mono",
+    fontWeight: "700",
+    fontSize: "26",
+    fill: "var(--ink)"
+  }, pct, "%"), /*#__PURE__*/React.createElement("text", {
+    x: "65",
+    y: "80",
+    textAnchor: "middle",
+    fontFamily: "Rubik",
+    fontSize: "11",
+    fill: "var(--ink-soft)"
+  }, "ציון")), /*#__PURE__*/React.createElement("div", {
+    className: "big",
+    style: {
+      color: col
+    }
+  }, correct, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: 'var(--ink-faint)',
+      fontSize: 28
+    }
+  }, "/", total)), /*#__PURE__*/React.createElement("div", {
+    className: "lbl"
+  }, "שאלות נכונות"), /*#__PURE__*/React.createElement("div", {
+    className: "sub"
+  }, new Date(sess.started_at).toLocaleString('he-IL')))), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontSize: 18,
+      margin: '22px 0 4px'
+    }
+  }, "פירוט השאלות"), /*#__PURE__*/React.createElement("div", {
+    className: "rev"
+  }, rows.map((r, k) => {
+    const q = QBY[r.question_id];
+    const empty = r.selected.length === 0;
+    return /*#__PURE__*/React.createElement("div", {
+      key: k,
+      className: 'card pad revq ' + (r.is_correct ? 'ok' : 'no')
+    }, /*#__PURE__*/React.createElement("span", {
+      className: 'revtag ' + (r.is_correct ? 'ok' : 'no')
+    }, r.is_correct ? '✓ נכון' : empty ? '— לא נענתה' : '✗ שגוי'), /*#__PURE__*/React.createElement("div", {
+      className: "qmeta",
+      style: {
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "qid"
+    }, q.id), /*#__PURE__*/React.createElement("span", {
+      className: "qchapter"
+    }, chapterLabel(q))), /*#__PURE__*/React.createElement("p", {
+      className: "stem ltr",
+      style: {
+        fontSize: 15,
+        marginBottom: 12
+      }
+    }, q.stem), /*#__PURE__*/React.createElement("div", {
+      className: "opts"
+    }, letters(q).map(L => {
+      const isC = q.correct.includes(L),
+        picked = r.selected.includes(L);
+      let cls = 'opt';
+      if (isC && picked) cls += ' correct';else if (isC && !picked) cls += ' misscorrect';else if (!isC && picked) cls += ' wrongsel';
+      return /*#__PURE__*/React.createElement("div", {
+        key: L,
+        className: cls
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "box"
+      }, L), /*#__PURE__*/React.createElement("span", {
+        className: "otext"
+      }, q.options[L]));
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "rules",
+      style: {
+        borderColor: 'var(--teal)',
+        background: 'var(--teal-tint)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "lbl",
+      style: {
+        color: 'var(--teal)'
+      }
+    }, "חוקים רלוונטיים"), /*#__PURE__*/React.createElement("div", {
+      className: "ref"
+    }, q.rules)));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      margin: '22px 0',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    onClick: () => go('examnew')
+  }, "מבחן נוסף"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית")));
 }
 
 /* ============================================================
    HISTORY
 ============================================================ */
-function History({sb,go}){
-  const [list,setList]=useState(null);
-  useEffect(()=>{ let on=true;
-    sb.from('exam_sessions').select('*').not('finished_at','is',null).order('started_at',{ascending:false}).then(({data})=>{ if(on) setList(data||[]); });
-    return ()=>{on=false};
-  },[sb]);
-  if(!list) return <div className="spin"/>;
-  return (
-    <>
-      <div className="hero"><h1>מבחנים קודמים</h1><p>{list.length? `${list.length} מבחנים הושלמו.`:'עדיין אין מבחנים שהושלמו.'}</p></div>
-      {list.length===0 ? (
-        <div className="card pad empty">
-          <Arc size={70} color="#90a0b5"/>
-          <p>כאן יופיעו המבחנים שתשלימו.</p>
-          <button className="btn btn-primary" style={{marginTop:8}} onClick={()=>go('examnew')}>צרו מבחן ראשון</button>
-        </div>
-      ) : (
-        <div className="rev">
-          {list.map(s=>{
-            const pct=Math.round((s.score_correct||0)/(s.score_total||1)*100);
-            const col= pct>=80?'var(--correct)': pct>=60?'var(--gold)':'var(--wrong)';
-            const bg = pct>=80?'var(--correct-tint)': pct>=60?'#f6efdc':'var(--wrong-tint)';
-            return (
-              <button key={s.id} className="hrow" onClick={()=>go('result',{sessionId:s.id})}>
-                <div>
-                  <div className="hscore">{s.score_correct}/{s.score_total} <span style={{fontSize:13,color:'var(--ink-faint)',fontWeight:600}}>· {Math.round(s.duration_seconds/60)} דק׳</span></div>
-                  <div className="hmeta">{new Date(s.started_at).toLocaleString('he-IL')}</div>
-                </div>
-                <span className="pctpill" style={{color:col,background:bg}}>{pct}%</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </>
-  );
+function History({
+  sb,
+  go
+}) {
+  const [list, setList] = useState(null);
+  useEffect(() => {
+    let on = true;
+    sb.from('exam_sessions').select('*').not('finished_at', 'is', null).order('started_at', {
+      ascending: false
+    }).then(({
+      data
+    }) => {
+      if (on) setList(data || []);
+    });
+    return () => {
+      on = false;
+    };
+  }, [sb]);
+  if (!list) return /*#__PURE__*/React.createElement("div", {
+    className: "spin"
+  });
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "hero"
+  }, /*#__PURE__*/React.createElement("h1", null, "מבחנים קודמים"), /*#__PURE__*/React.createElement("p", null, list.length ? `${list.length} מבחנים הושלמו.` : 'עדיין אין מבחנים שהושלמו.')), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "card pad empty"
+  }, /*#__PURE__*/React.createElement(Arc, {
+    size: 70,
+    color: "#90a0b5"
+  }), /*#__PURE__*/React.createElement("p", null, "כאן יופיעו המבחנים שתשלימו."), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    style: {
+      marginTop: 8
+    },
+    onClick: () => go('examnew')
+  }, "צרו מבחן ראשון")) : /*#__PURE__*/React.createElement("div", {
+    className: "rev"
+  }, list.map(s => {
+    const pct = Math.round((s.score_correct || 0) / (s.score_total || 1) * 100);
+    const col = pct >= 80 ? 'var(--correct)' : pct >= 60 ? 'var(--gold)' : 'var(--wrong)';
+    const bg = pct >= 80 ? 'var(--correct-tint)' : pct >= 60 ? '#f6efdc' : 'var(--wrong-tint)';
+    return /*#__PURE__*/React.createElement("button", {
+      key: s.id,
+      className: "hrow",
+      onClick: () => go('result', {
+        sessionId: s.id
+      })
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "hscore"
+    }, s.score_correct, "/", s.score_total, " ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 13,
+        color: 'var(--ink-faint)',
+        fontWeight: 600
+      }
+    }, "· ", Math.round(s.duration_seconds / 60), " דק׳")), /*#__PURE__*/React.createElement("div", {
+      className: "hmeta"
+    }, new Date(s.started_at).toLocaleString('he-IL'))), /*#__PURE__*/React.createElement("span", {
+      className: "pctpill",
+      style: {
+        color: col,
+        background: bg
+      }
+    }, pct, "%"));
+  })));
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
 </html>
