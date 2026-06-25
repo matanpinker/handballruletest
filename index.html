@@ -111,6 +111,12 @@ input{font-family:inherit}
 .streakrow b{font-family:"Space Mono"; color:var(--ink); margin-inline-start:3px}
 .streakbest{color:var(--goal)}
 .streakbest b{color:var(--goal)}
+.jumpbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--line); font-size:13px; font-weight:600; color:var(--ink-soft)}
+.jsel,.jnum{font-family:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink)}
+.jnum{width:74px}
+.jdot{font-weight:800}
+.jbtn{padding:6px 14px; font-size:13px}
+.jerr{color:var(--wrong); font-size:12px; width:100%}
 
 /* ---------- question ---------- */
 .qmeta{display:flex; align-items:center; gap:10px; margin-bottom:14px}
@@ -232,6 +238,23 @@ const {
 const QUIZ = JSON.parse(document.getElementById('quizdata').textContent);
 const TOTAL = QUIZ.length;
 const QBY = Object.fromEntries(QUIZ.map(q => [q.id, q]));
+const CHAPTERS = [...new Set(QUIZ.map(q => q.chapter))];
+// מציאת השאלה הראשונה שטרם נענתה, מעגלית, החל מ-fromIdx (כולל)
+function snapUnanswered(fromIdx, answered) {
+  for (let s = 0; s < TOTAL; s++) {
+    const j = (fromIdx + s) % TOTAL;
+    if (!answered.has(QUIZ[j].id)) return j;
+  }
+  return -1;
+}
+// מציאת השאלה הבאה שטרם נענתה, מעגלית, אחרי fromIdx
+function nextUnanswered(fromIdx, answered) {
+  for (let s = 1; s <= TOTAL; s++) {
+    const j = (fromIdx + s) % TOTAL;
+    if (!answered.has(QUIZ[j].id)) return j;
+  }
+  return -1;
+}
 
 /* ---------- helpers ---------- */
 const eqSet = (a, b) => {
@@ -806,8 +829,8 @@ function Home({
       on = false;
     };
   }, [sb]);
-  const answered = prog ? prog.current_index : 0;
   const ansBase = prog ? prog.correct_count + prog.wrong_count : 0;
+  const answered = Math.min(TOTAL, ansBase);
   const pct = prog ? Math.round(answered / TOTAL * 100) : 0;
   const correctPct = ansBase ? Math.round(prog.correct_count / ansBase * 100) : 0;
   const wrongPct = ansBase ? Math.round(prog.wrong_count / ansBase * 100) : 0;
@@ -923,7 +946,7 @@ function Home({
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost btn-block",
     onClick: () => go('history')
-  }, "מבחנים קודמים ›")), prog && (prog.current_index > 0 || prog.correct_count > 0 || prog.wrong_count > 0) && /*#__PURE__*/React.createElement("div", {
+  }, "מבחנים קודמים ›")), prog && ansBase > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 14,
       textAlign: 'center'
@@ -953,13 +976,18 @@ function Learn({
   const [confirm, setConfirm] = useState(false);
   const [streak, setStreak] = useState(0);
   const [best, setBest] = useState(0);
+  const [jChap, setJChap] = useState('');
+  const [jNum, setJNum] = useState('');
+  const [jErr, setJErr] = useState('');
   const flashTimer = useRef(null);
   const pendingNext = useRef(null);
+  const answeredRef = useRef(new Set());
   useEffect(() => {
     let on = true;
-    sb.from('learning_progress').select('*').maybeSingle().then(async ({
-      data
-    }) => {
+    (async () => {
+      let {
+        data
+      } = await sb.from('learning_progress').select('*').maybeSingle();
       if (!data) {
         await sb.from('learning_progress').insert({
           current_index: 0,
@@ -972,35 +1000,51 @@ function Learn({
           wrong_count: 0
         };
       }
-      if (on) setProg(data);
-    });
-    sb.from('learning_answers').select('is_correct,created_at').order('created_at', {
-      ascending: true
-    }).then(({
-      data
-    }) => {
-      if (!on) return;
+      const {
+        data: ans
+      } = await sb.from('learning_answers').select('question_id,is_correct,created_at').order('created_at', {
+        ascending: true
+      });
       let cur = 0,
         bst = 0;
-      (data || []).forEach(r => {
+      const set = new Set();
+      (ans || []).forEach(r => {
+        set.add(r.question_id);
         if (r.is_correct) {
           cur++;
           if (cur > bst) bst = cur;
         } else cur = 0;
       });
+      answeredRef.current = set;
+      // ה-current_index משמש כמצביע לשאלה הנוכחית; מצמידים אותו לשאלה הראשונה שטרם נענתה
+      let idx;
+      if (set.size >= TOTAL) idx = TOTAL;else {
+        const probe = data.current_index >= TOTAL || data.current_index < 0 ? 0 : data.current_index;
+        idx = snapUnanswered(probe, set);
+        if (idx < 0) idx = TOTAL;
+      }
+      if (!on) return;
       setStreak(cur);
       setBest(bst);
-    });
+      setProg({
+        ...data,
+        current_index: idx
+      });
+    })();
     return () => {
       on = false;
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
   }, [sb]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [prog && prog.current_index]);
   if (!prog) return /*#__PURE__*/React.createElement("div", {
     className: "spin"
   });
+  const answeredCount = Math.min(TOTAL, prog.correct_count + prog.wrong_count);
   const idx = prog.current_index;
-  const done = idx >= TOTAL;
+  const done = idx >= TOTAL || answeredCount >= TOTAL;
   const q = done ? null : QUIZ[idx];
   const toggle = L => {
     if (graded) return;
@@ -1026,8 +1070,10 @@ function Learn({
     const newStreak = correct ? streak + 1 : 0;
     setStreak(newStreak);
     setBest(b => Math.max(b, newStreak));
+    answeredRef.current.add(q.id);
+    const nextIdx = nextUnanswered(idx, answeredRef.current);
     const np = {
-      current_index: idx + 1,
+      current_index: nextIdx < 0 ? TOTAL : nextIdx,
       correct_count: prog.correct_count + (correct ? 1 : 0),
       wrong_count: prog.wrong_count + (correct ? 0 : 1)
     };
@@ -1060,6 +1106,7 @@ function Learn({
   const cont = () => advance(pendingNext.current);
   const resetAll = async () => {
     await resetLearning(sb);
+    answeredRef.current = new Set();
     setProg({
       current_index: 0,
       correct_count: 0,
@@ -1071,7 +1118,37 @@ function Learn({
     setStreak(0);
     setBest(0);
   };
-  const pct = Math.round(idx / TOTAL * 100);
+  const doJump = async () => {
+    setJErr('');
+    const chap = jChap || (q ? q.chapter : CHAPTERS[0]);
+    const raw = String(jNum).trim();
+    const id = QBY[`${chap}.${raw}`] ? `${chap}.${raw}` : QBY[`${chap}${raw}`] ? `${chap}${raw}` : null;
+    if (!raw || !id) {
+      setJErr('שאלה לא קיימת במאגר');
+      return;
+    }
+    const target = QUIZ.indexOf(QBY[id]);
+    const j = snapUnanswered(target, answeredRef.current);
+    if (j < 0) {
+      setJErr('כל השאלות כבר נענו');
+      return;
+    }
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    setFlash(false);
+    setGraded(null);
+    setSel([]);
+    setJNum('');
+    const np = {
+      ...prog,
+      current_index: j
+    };
+    setProg(np);
+    await sb.from('learning_progress').update({
+      current_index: j,
+      updated_at: new Date().toISOString()
+    }).eq('user_id', (await sb.auth.getUser()).data.user.id);
+  };
+  const pct = Math.round(answeredCount / TOTAL * 100);
   const streakPct = best > 0 ? Math.round(streak / best * 100) : 0;
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "lhead"
@@ -1086,7 +1163,7 @@ function Learn({
     className: "pmeta"
   }, /*#__PURE__*/React.createElement("span", {
     className: "pct"
-  }, Math.min(idx, TOTAL), "/", TOTAL, " · ", pct, "%"), /*#__PURE__*/React.createElement("div", {
+  }, answeredCount, "/", TOTAL, " · ", pct, "%"), /*#__PURE__*/React.createElement("div", {
     className: "counters"
   }, /*#__PURE__*/React.createElement("span", {
     className: "cnt ok"
@@ -1144,6 +1221,32 @@ function Learn({
       marginTop: 18
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "jumpbar"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "jlbl"
+  }, "קפיצה לשאלה:"), /*#__PURE__*/React.createElement("select", {
+    className: "jsel",
+    value: jChap || q.chapter,
+    onChange: e => setJChap(e.target.value)
+  }, CHAPTERS.map(c => /*#__PURE__*/React.createElement("option", {
+    key: c,
+    value: c
+  }, c === 'SAR' ? 'SAR' : `פרק ${c}`))), /*#__PURE__*/React.createElement("span", {
+    className: "jdot"
+  }, "."), /*#__PURE__*/React.createElement("input", {
+    className: "jnum",
+    type: "number",
+    min: 1,
+    value: jNum,
+    placeholder: "מס׳",
+    onChange: e => setJNum(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && doJump()
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost jbtn",
+    onClick: doJump
+  }, "עבור"), jErr && /*#__PURE__*/React.createElement("span", {
+    className: "jerr"
+  }, jErr)), /*#__PURE__*/React.createElement("div", {
     className: "streakbar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "streakrow"
