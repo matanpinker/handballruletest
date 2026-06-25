@@ -239,6 +239,7 @@ const QUIZ = JSON.parse(document.getElementById('quizdata').textContent);
 const TOTAL = QUIZ.length;
 const QBY = Object.fromEntries(QUIZ.map(q => [q.id, q]));
 const CHAPTERS = [...new Set(QUIZ.map(q => q.chapter))];
+const CHAPTER_Q = Object.fromEntries(CHAPTERS.map(c => [c, QUIZ.filter(q => q.chapter === c)]));
 // מציאת השאלה הראשונה שטרם נענתה, מעגלית, החל מ-fromIdx (כולל)
 function snapUnanswered(fromIdx, answered) {
   for (let s = 0; s < TOTAL; s++) {
@@ -1120,14 +1121,11 @@ function Learn({
   };
   const doJump = async () => {
     setJErr('');
-    const chap = jChap || (q ? q.chapter : CHAPTERS[0]);
-    const raw = String(jNum).trim();
-    const id = QBY[`${chap}.${raw}`] ? `${chap}.${raw}` : QBY[`${chap}${raw}`] ? `${chap}${raw}` : null;
-    if (!raw || !id) {
-      setJErr('שאלה לא קיימת במאגר');
+    if (!jNum || !QBY[jNum]) {
+      setJErr('בחרו מספר שאלה');
       return;
     }
-    const target = QUIZ.indexOf(QBY[id]);
+    const target = QUIZ.indexOf(QBY[jNum]);
     const j = snapUnanswered(target, answeredRef.current);
     if (j < 0) {
       setJErr('כל השאלות כבר נענו');
@@ -1150,6 +1148,8 @@ function Learn({
   };
   const pct = Math.round(answeredCount / TOTAL * 100);
   const streakPct = best > 0 ? Math.round(streak / best * 100) : 0;
+  const curChap = jChap || (q ? q.chapter : CHAPTERS[0]);
+  const qOpts = CHAPTER_Q[curChap] || [];
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "lhead"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1226,22 +1226,30 @@ function Learn({
     className: "jlbl"
   }, "קפיצה לשאלה:"), /*#__PURE__*/React.createElement("select", {
     className: "jsel",
-    value: jChap || q.chapter,
-    onChange: e => setJChap(e.target.value)
+    value: curChap,
+    onChange: e => {
+      setJChap(e.target.value);
+      setJNum('');
+      setJErr('');
+    }
   }, CHAPTERS.map(c => /*#__PURE__*/React.createElement("option", {
     key: c,
     value: c
   }, c === 'SAR' ? 'SAR' : `פרק ${c}`))), /*#__PURE__*/React.createElement("span", {
     className: "jdot"
-  }, "."), /*#__PURE__*/React.createElement("input", {
+  }, "."), /*#__PURE__*/React.createElement("select", {
     className: "jnum",
-    type: "number",
-    min: 1,
     value: jNum,
-    placeholder: "מס׳",
-    onChange: e => setJNum(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && doJump()
-  }), /*#__PURE__*/React.createElement("button", {
+    onChange: e => {
+      setJNum(e.target.value);
+      setJErr('');
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "מס׳"), qOpts.map(qq => /*#__PURE__*/React.createElement("option", {
+    key: qq.id,
+    value: qq.id
+  }, qq.id.slice(curChap.length).replace(/^\./, '')))), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost jbtn",
     onClick: doJump
   }, "עבור"), jErr && /*#__PURE__*/React.createElement("span", {
