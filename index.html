@@ -222,7 +222,63 @@ input{font-family:inherit}
 .spin{width:30px;height:30px;border:3px solid var(--court-line);border-top-color:var(--goal);border-radius:50%;animation:sp .7s linear infinite;margin:30px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important; transition-duration:.01ms!important}}
+
+/* ---------- מצב רשת / סנכרון ---------- */
+.netpill{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:999px; background:var(--surface); border:1px solid var(--line); color:var(--ink-soft); white-space:nowrap}
+.netpill.off{background:var(--goal-tint); border-color:rgba(236,90,55,.45); color:var(--goal-deep)}
+.netpill.sync{background:var(--teal-tint); border-color:rgba(14,124,134,.35); color:var(--teal)}
+.netdot{width:7px; height:7px; border-radius:50%; background:var(--correct); flex:none}
+.netpill.off .netdot{background:var(--goal)}
+.netpill.sync .netdot{background:var(--teal); animation:pulse 1s infinite}
+.banner{display:flex; align-items:flex-start; gap:10px; padding:11px 14px; border-radius:var(--r-sm); font-size:13.5px; font-weight:600; margin-bottom:14px; line-height:1.5}
+.banner.warn{background:var(--goal-tint); color:var(--goal-deep); border:1px solid rgba(236,90,55,.3)}
+.banner.info{background:var(--teal-tint); color:var(--teal); border:1px solid rgba(14,124,134,.25)}
+
+/* ---------- מבחן משותף ---------- */
+.codebox{font-family:"Space Mono"; font-weight:700; font-size:29px; letter-spacing:.26em; text-align:center; padding:16px 10px 16px 22px; background:var(--surface-2); border:1.5px dashed var(--line); border-radius:var(--r-sm); margin:4px 0 12px; direction:ltr}
+.linkrow{display:flex; gap:8px; align-items:stretch}
+.linkrow input{flex:1; min-width:0; padding:11px 12px; border:1.5px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2); font-size:12px; font-family:"Space Mono"; direction:ltr; text-align:left}
+.plist{display:flex; flex-direction:column; gap:8px; margin-top:12px}
+.prow{display:flex; align-items:center; gap:10px; padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface)}
+.prow.me{border-color:var(--teal); background:var(--teal-tint)}
+.avatar{flex:none; width:32px; height:32px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px}
+.pname{font-weight:600; font-size:14.5px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.pbadge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line); white-space:nowrap}
+.pbadge.host{background:var(--gold); color:#fff; border-color:transparent}
+.pbadge.done{background:var(--correct-tint); color:var(--correct); border-color:transparent}
+.pbadge.wait{background:var(--goal-tint); color:var(--goal-deep); border-color:transparent}
+.lbrank{font-family:"Space Mono"; font-weight:700; font-size:15px; color:var(--ink-faint); width:22px; flex:none; text-align:center}
+.lbscore{font-family:"Space Mono"; font-weight:700; font-size:15px}
+.cmp{margin-top:16px; border-top:1px dashed var(--line); padding-top:12px; display:flex; flex-direction:column; gap:7px}
+.cmp .cmphead{font-family:"Space Mono"; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; margin-bottom:3px}
+.cmprow{display:flex; align-items:center; gap:9px; font-size:13px; padding:5px 0}
+.cmprow .who{font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.cmprow.me .who{color:var(--teal); font-weight:700}
+.pick{font-family:"Space Mono"; font-weight:700; font-size:12px; padding:4px 9px; border-radius:7px; background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line); direction:ltr; flex:none}
+.pick.ok{background:var(--correct-tint); color:var(--correct); border-color:transparent}
+.pick.no{background:var(--wrong-tint); color:var(--wrong); border-color:transparent}
+
+/* ---------- מבחני אופליין ---------- */
+.offcard{display:flex; align-items:center; gap:12px; padding:14px 15px; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface)}
+.offcard .oinfo{flex:1; min-width:0}
+.offcard .otitle{font-weight:700; font-size:14.5px}
+.offcard .osub{font-size:12.5px; color:var(--ink-soft); margin-top:3px}
+.iconbtn{background:none; border:none; color:var(--ink-faint); font-size:17px; padding:7px; border-radius:8px; line-height:1; flex:none}
+.iconbtn:hover{background:var(--wrong-tint); color:var(--wrong)}
+.waitdots{display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 0}
+.waitdots i{width:8px; height:8px; border-radius:50%; background:var(--teal); animation:bounce 1.1s infinite}
+.waitdots i:nth-child(2){animation-delay:.16s}
+.waitdots i:nth-child(3){animation-delay:.32s}
+@keyframes bounce{0%,60%,100%{opacity:.25; transform:translateY(0)}30%{opacity:1; transform:translateY(-5px)}}
 </style>
+<script>
+/* רישום ה-Service Worker — האפליקציה נטענת ופועלת גם ללא רשת */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
 </head>
 <body>
 <div id="root"></div>
@@ -337,8 +393,311 @@ const shuffle = arr => {
   }
   return a;
 };
+
+/* ============================================================
+   אופליין — אחסון מקומי, תור סנכרון וזיהוי מצב הרשת
+============================================================ */
+const h = React.createElement;
+const LS = {
+  get(k, d) {
+    try {
+      const r = localStorage.getItem(k);
+      return r ? JSON.parse(r) : d;
+    } catch (e) {
+      return d;
+    }
+  },
+  set(k, v) {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) {}
+  }
+};
+const OFFLINE_KEY = 'hb_offline_exams';
+const OUTBOX_KEY = 'hb_outbox';
+const NAME_KEY = 'hb_display_name';
+const JOIN_KEY = 'hb_pending_join';
+const ACTIVE_KEY = 'hb_active_shared';
+const isOffline = () => navigator.onLine === false;
+const notifyLocal = () => window.dispatchEvent(new Event('hb-local-change'));
+
+/* getSession נקרא מהאחסון המקומי ולכן עובד גם ללא רשת (בניגוד ל-getUser) */
+async function uidOf(sb) {
+  const {
+    data
+  } = await sb.auth.getSession();
+  return data && data.session && data.session.user ? data.session.user.id : null;
+}
+async function emailOf(sb) {
+  const {
+    data
+  } = await sb.auth.getSession();
+  return data && data.session && data.session.user ? data.session.user.email || '' : '';
+}
+function savedName(email) {
+  const s = LS.get(NAME_KEY, '');
+  if (s) return s;
+  return (email || '').split('@')[0] || 'משתתף';
+}
+function useOnline() {
+  const [on, setOn] = useState(!isOffline());
+  useEffect(() => {
+    const up = () => setOn(true),
+      down = () => setOn(false);
+    window.addEventListener('online', up);
+    window.addEventListener('offline', down);
+    return () => {
+      window.removeEventListener('online', up);
+      window.removeEventListener('offline', down);
+    };
+  }, []);
+  return on;
+}
+// גורם לרינדור מחדש בכל שינוי בנתונים המקומיים (מבחני אופליין / תור הסנכרון)
+function useLocalVersion() {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const f = () => setV(x => x + 1);
+    window.addEventListener('hb-local-change', f);
+    return () => window.removeEventListener('hb-local-change', f);
+  }, []);
+  return v;
+}
+
+/* ---------- תור כתיבות שממתינות לחיבור ---------- */
+const Outbox = {
+  all() {
+    return LS.get(OUTBOX_KEY, []);
+  },
+  push(item) {
+    const a = this.all();
+    a.push(item);
+    LS.set(OUTBOX_KEY, a);
+    notifyLocal();
+  },
+  count() {
+    return this.all().length;
+  }
+};
+async function writeRow(sb, table, row) {
+  if (isOffline()) {
+    Outbox.push({ kind: 'insert', table, row });
+    return { queued: true };
+  }
+  try {
+    const { error } = await sb.from(table).insert(row);
+    if (error) throw error;
+    return {};
+  } catch (e) {
+    Outbox.push({ kind: 'insert', table, row });
+    return { queued: true };
+  }
+}
+async function writeProgress(sb, table, patch, userId) {
+  if (!userId) return { queued: false };
+  if (isOffline()) {
+    Outbox.push({ kind: 'progress', table, row: { user_id: userId, ...patch } });
+    return { queued: true };
+  }
+  try {
+    const { error } = await sb.from(table).update(patch).eq('user_id', userId);
+    if (error) throw error;
+    return {};
+  } catch (e) {
+    Outbox.push({ kind: 'progress', table, row: { user_id: userId, ...patch } });
+    return { queued: true };
+  }
+}
+let syncing = false;
+async function syncOutbox(sb) {
+  if (syncing || isOffline() || !sb) return;
+  const items = Outbox.all();
+  if (!items.length) return;
+  syncing = true;
+  const left = [];
+  for (const it of items) {
+    try {
+      if (it.kind === 'insert') {
+        const { error } = await sb.from(it.table).insert(it.row);
+        if (error) throw error;
+      } else if (it.kind === 'progress') {
+        const { error } = await sb.from(it.table).upsert(it.row, { onConflict: 'user_id' });
+        if (error) throw error;
+      } else if (it.kind === 'examSession') {
+        const { data, error } = await sb.from(it.sessionsTable).insert(it.session).select().single();
+        if (error) throw error;
+        if (it.answers && it.answers.length) {
+          const { error: e2 } = await sb.from(it.answersTable)
+            .insert(it.answers.map(a => ({ ...a, session_id: data.id })));
+          if (e2) throw e2;
+        }
+        OfflineExams.markSynced(it.localId);
+      }
+    } catch (e) {
+      left.push(it);
+    }
+  }
+  LS.set(OUTBOX_KEY, left);
+  syncing = false;
+  notifyLocal();
+}
+
+/* ---------- מבחני אופליין השמורים במכשיר ---------- */
+const OfflineExams = {
+  all() {
+    return LS.get(OFFLINE_KEY, []);
+  },
+  forBank(bank) {
+    return this.all().filter(x => x.bank === bank);
+  },
+  byId(id) {
+    return this.all().find(x => x.id === id) || null;
+  },
+  save(ex) {
+    const a = this.all();
+    const i = a.findIndex(x => x.id === ex.id);
+    if (i >= 0) a[i] = ex;else a.unshift(ex);
+    LS.set(OFFLINE_KEY, a);
+    notifyLocal();
+    return ex;
+  },
+  remove(id) {
+    LS.set(OFFLINE_KEY, this.all().filter(x => x.id !== id));
+    notifyLocal();
+  },
+  markSynced(id) {
+    const e = this.byId(id);
+    if (e) {
+      e.synced = true;
+      this.save(e);
+    }
+  }
+};
+function makeOfflineExam(B, num, mins, title) {
+  return {
+    id: 'off_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    bank: B.key,
+    title: (title || '').trim(),
+    duration: mins * 60,
+    qids: shuffle(B.QUIZ.map(q => q.id)).slice(0, num),
+    createdAt: new Date().toISOString(),
+    status: 'ready',
+    startedAt: null,
+    finishedAt: null,
+    rows: null,
+    correct: null,
+    total: null,
+    synced: false
+  };
+}
+// שמירת תוצאות מבחן אופליין מקומית + הצבתו בתור לסנכרון להיסטוריה בענן
+function finishOfflineExam(B, exam, ansMap, correctN) {
+  const rows = exam.qids.map(qid => {
+    const s = ansMap[qid] || [];
+    return {
+      question_id: qid,
+      selected: s,
+      is_correct: s.length > 0 && eqSet(s, B.QBY[qid].correct)
+    };
+  });
+  const finishedAt = new Date().toISOString();
+  const done = OfflineExams.save({
+    ...exam,
+    status: 'done',
+    finishedAt,
+    rows,
+    correct: correctN,
+    total: exam.qids.length,
+    synced: false
+  });
+  Outbox.push({
+    kind: 'examSession',
+    localId: exam.id,
+    sessionsTable: B.tables.sessions,
+    answersTable: B.tables.examAnswers,
+    session: {
+      num_questions: exam.qids.length,
+      duration_seconds: exam.duration,
+      question_ids: exam.qids,
+      started_at: exam.startedAt || finishedAt,
+      finished_at: finishedAt,
+      score_correct: correctN,
+      score_total: exam.qids.length
+    },
+    answers: rows
+  });
+  return done;
+}
+
+/* ---------- תמונת מצב מקומית של הלמידה (לשימוש ללא רשת) ---------- */
+const learnKey = B => 'hb_learn_' + B.key;
+function saveLearnCache(B, prog, answeredSet, streak, best) {
+  LS.set(learnKey(B), {
+    prog: {
+      current_index: prog.current_index,
+      correct_count: prog.correct_count,
+      wrong_count: prog.wrong_count
+    },
+    answered: [...answeredSet],
+    streak,
+    best,
+    at: Date.now()
+  });
+}
+function loadLearnCache(B) {
+  const c = LS.get(learnKey(B), null);
+  return c && c.prog ? c : null;
+}
+
+/* ---------- מבחן משותף — קוד הזמנה וקישור ---------- */
+const CODE_ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function makeCode() {
+  let s = '';
+  for (let i = 0; i < 6; i++) s += CODE_ALPHA[Math.floor(Math.random() * CODE_ALPHA.length)];
+  return s;
+}
+function inviteLink(code) {
+  const u = new URL(window.location.href);
+  u.search = '';
+  u.hash = 'join=' + code;
+  return u.toString();
+}
+function readJoinCode() {
+  const m = /[#&]join=([A-Za-z0-9]{4,12})/.exec(window.location.hash || '');
+  return m ? m[1].toUpperCase() : null;
+}
+function clearJoinHash() {
+  try {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  } catch (e) {}
+}
+/* מצביע למבחן המשותף הפעיל — כדי שאפשר יהיה לחזור אליו אחרי יציאה מהמסך */
+function setActiveShared(exam) {
+  LS.set(ACTIVE_KEY, exam ? {
+    examId: exam.id,
+    code: exam.code,
+    bank: exam.bank,
+    at: Date.now()
+  } : null);
+  notifyLocal();
+}
+function getActiveShared() {
+  const a = LS.get(ACTIVE_KEY, null);
+  // מבחן שנשכח מעל 12 שעות כבר לא רלוונטי
+  if (!a || !a.examId || Date.now() - (a.at || 0) > 43200000) return null;
+  return a;
+}
+function translateSharedErr(m) {
+  if (/NOT_FOUND/.test(m)) return 'לא נמצא מבחן עם הקוד הזה. בדקו את הקישור.';
+  if (/ALREADY_STARTED/.test(m)) return 'המבחן כבר התחיל — לא ניתן להצטרף אליו יותר.';
+  if (/NOT_HOST/.test(m)) return 'רק מי שיצר את המבחן יכול להתחיל אותו.';
+  if (/AUTH_REQUIRED/.test(m)) return 'צריך להתחבר כדי להצטרף.';
+  if (/Could not find the function|does not exist|schema cache/i.test(m)) return 'טבלאות המבחן המשותף עדיין לא הותקנו. הריצו את shared_exam_tables.sql ב-Supabase.';
+  return m;
+}
+
 async function resetLearning(sb, B) {
-  const u = (await sb.auth.getUser()).data.user.id;
+  const u = await uidOf(sb);
   await sb.from(B.tables.progress).update({
     current_index: 0,
     correct_count: 0,
@@ -346,6 +705,7 @@ async function resetLearning(sb, B) {
     updated_at: new Date().toISOString()
   }).eq('user_id', u);
   await sb.from(B.tables.answers).delete().eq('user_id', u);
+  LS.set(learnKey(B), null);
 }
 const pad2 = n => String(n).padStart(2, '0');
 const fmtDate = d => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
@@ -515,6 +875,28 @@ function App() {
   const [cfg, setCfg] = useState(getConfig());
   const [sb, setSb] = useState(null);
   const [session, setSession] = useState(undefined); // undefined=loading
+  // קישור הזמנה למבחן משותף — נשמר עד שהמשתמש מחובר
+  const [joinCode, setJoinCode] = useState(() => {
+    const c = readJoinCode();
+    if (c) {
+      LS.set(JOIN_KEY, c);
+      clearJoinHash();
+      return c;
+    }
+    return LS.get(JOIN_KEY, null);
+  });
+  useEffect(() => {
+    const onHash = () => {
+      const c = readJoinCode();
+      if (c) {
+        LS.set(JOIN_KEY, c);
+        clearJoinHash();
+        setJoinCode(c);
+      }
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     if (cfg) {
@@ -549,6 +931,7 @@ function App() {
   if (!session) return /*#__PURE__*/React.createElement(Auth, {
     sb: sb,
     embedded: HAS_EMBED,
+    joinCode: joinCode,
     onReconfig: () => {
       localStorage.removeItem('hb_cfg');
       setCfg(null);
@@ -557,7 +940,12 @@ function App() {
   });
   return /*#__PURE__*/React.createElement(Main, {
     sb: sb,
-    session: session
+    session: session,
+    joinCode: joinCode,
+    onJoinHandled: () => {
+      LS.set(JOIN_KEY, null);
+      setJoinCode(null);
+    }
   });
 }
 
@@ -652,8 +1040,10 @@ function Setup({
 function Auth({
   sb,
   onReconfig,
-  embedded
+  embedded,
+  joinCode
 }) {
+  const online = useOnline();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
@@ -716,7 +1106,13 @@ function Auth({
       fontSize: 20,
       margin: '18px 0 16px'
     }
-  }, mode === 'login' ? 'כניסה לחשבון' : 'יצירת חשבון'), err && /*#__PURE__*/React.createElement("div", {
+  }, mode === 'login' ? 'כניסה לחשבון' : 'יצירת חשבון'), joinCode && h("div", {
+    className: "banner info"
+  }, h("span", null, "הוזמנת למבחן משותף (קוד ", h("b", {
+    className: "mono"
+  }, joinCode), "). התחברו כדי להצטרף.")), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אין חיבור לאינטרנט. הכניסה לחשבון דורשת חיבור — אבל אחרי כניסה ראשונה האפליקציה תיפתח גם ללא רשת.")), err && /*#__PURE__*/React.createElement("div", {
     className: "err"
   }, err), msg && /*#__PURE__*/React.createElement("div", {
     className: "ok-msg"
@@ -781,11 +1177,19 @@ function translateAuthErr(m) {
 ============================================================ */
 function Main({
   sb,
-  session
+  session,
+  joinCode,
+  onJoinHandled
 }) {
-  const [route, setRoute] = useState({
+  const [route, setRoute] = useState(() => joinCode ? {
+    name: 'join',
+    code: joinCode
+  } : {
     name: 'home'
   });
+  const online = useOnline();
+  const lv = useLocalVersion();
+  const pending = Outbox.count();
   const go = (name, props = {}) => {
     window.scrollTo(0, 0);
     setRoute({
@@ -793,6 +1197,19 @@ function Main({
       ...props
     });
   };
+  // קישור הזמנה שהגיע כשהמשתמש כבר היה מחובר
+  useEffect(() => {
+    if (joinCode && route.name !== 'join') go('join', {
+      code: joinCode
+    });
+  }, [joinCode]);
+  // סנכרון כל מה שנשמר מקומית ברגע שיש חיבור, ואז ניסיון חוזר מדי פרק זמן
+  useEffect(() => {
+    if (!online) return;
+    syncOutbox(sb);
+    const t = setInterval(() => syncOutbox(sb), 20000);
+    return () => clearInterval(t);
+  }, [online, sb]);
   const B = BANKS[route.bank] || BANKS.rules;
   const onHome = route.name === 'home';
   // ניווט מתוך מסך של מאגר מסוים — שומר על זהות המאגר
@@ -820,7 +1237,12 @@ function Main({
     }
   }, /*#__PURE__*/React.createElement("b", null, onHome ? 'חוקת הכדוריד' : B.title), /*#__PURE__*/React.createElement("span", null, onHome ? 'למידה למבחן' : B.subtitle))), /*#__PURE__*/React.createElement("div", {
     className: "spacer"
-  }), !onHome && /*#__PURE__*/React.createElement("button", {
+  }), (!online || pending > 0) && h("span", {
+    className: 'netpill ' + (online ? 'sync' : 'off'),
+    title: online ? 'מסנכרן נתונים שנשמרו במכשיר' : 'מצב אופליין — הנתונים נשמרים במכשיר ויסונכרנו בהמשך'
+  }, h("i", {
+    className: "netdot"
+  }), online ? 'מסנכרן ' + pending : 'אופליין'), !onHome && /*#__PURE__*/React.createElement("button", {
     className: "linkbtn",
     onClick: () => go('home')
   }, "‹ דף הבית"), /*#__PURE__*/React.createElement("button", {
@@ -863,6 +1285,39 @@ function Main({
     sb: sb,
     go: goB,
     B: B
+  }), route.name === 'offlinehub' && h(OfflineHub, {
+    sb,
+    go: goB,
+    B
+  }), route.name === 'offlinerun' && h(OfflineRun, {
+    go: goB,
+    B,
+    examId: route.examId
+  }), route.name === 'offlineresult' && h(OfflineResult, {
+    go: goB,
+    B,
+    examId: route.examId
+  }), route.name === 'sharednew' && h(SharedNew, {
+    sb,
+    go: goB,
+    B
+  }), route.name === 'join' && h(SharedJoin, {
+    sb,
+    go,
+    code: route.code,
+    onHandled: onJoinHandled
+  }), route.name === 'sharedlobby' && h(SharedLobby, {
+    sb,
+    go,
+    examId: route.examId
+  }), route.name === 'sharedrun' && h(SharedRun, {
+    sb,
+    go,
+    examId: route.examId
+  }), route.name === 'sharedresult' && h(SharedResult, {
+    sb,
+    go,
+    examId: route.examId
   })), /*#__PURE__*/React.createElement("div", {
     className: "footnote"
   }, onHome ? `${BANKS.rules.TOTAL} שאלות חוקה · ${BANKS.glossary.TOTAL} שאלות Glossary` : `${B.footnote} · ${B.TOTAL} שאלות`));
@@ -875,7 +1330,44 @@ function Home({
   sb,
   go
 }) {
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  useLocalVersion();
+  const active = getActiveShared();
+  return /*#__PURE__*/React.createElement(React.Fragment, null, active && h("div", {
+    className: "card pad",
+    style: {
+      marginTop: 18,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      flexWrap: 'wrap'
+    }
+  }, h("div", {
+    style: {
+      flex: 1,
+      minWidth: 180
+    }
+  }, h("b", {
+    style: {
+      fontSize: 15
+    }
+  }, "יש לכם מבחן משותף פעיל"), h("div", {
+    className: "muted",
+    style: {
+      marginTop: 3
+    }
+  }, "קוד ", h("span", {
+    className: "mono"
+  }, active.code))), h("button", {
+    className: "btn btn-teal",
+    onClick: () => go('sharedlobby', {
+      examId: active.examId,
+      bank: active.bank
+    })
+  }, "חזרה למבחן ›"), h("button", {
+    className: "iconbtn",
+    title: "הסרה",
+    onClick: () => setActiveShared(null)
+  }, "✕")), /*#__PURE__*/React.createElement("div", {
     className: "hero"
   }, /*#__PURE__*/React.createElement("h1", null, "על מה נתאמן היום?"), /*#__PURE__*/React.createElement("p", null, "שני מאגרים נפרדים: חוקת הכדוריד ומילון המונחים הרשמי של EHF. ההתקדמות בכל מאגר נשמרת בנפרד.")), /*#__PURE__*/React.createElement(BankPanel, {
     sb: sb,
@@ -905,12 +1397,20 @@ function BankPanel({
   const [prog, setProg] = useState(null);
   const [start, setStart] = useState(undefined);
   const [confirm, setConfirm] = useState(false);
+  useLocalVersion();
+  const offList = OfflineExams.forBank(B.key);
+  const offCount = offList.length;
+  const offReady = offList.filter(x => x.status === 'ready').length;
   useEffect(() => {
     let on = true;
     sb.from(B.tables.progress).select('*').maybeSingle().then(({
-      data
+      data,
+      error
     }) => {
-      if (on) setProg(data || {
+      if (!on) return;
+      // ללא רשת — מציגים את תמונת המצב האחרונה ששמורה במכשיר
+      const cached = loadLearnCache(B);
+      if ((error || !data) && cached) setProg(cached.prog);else setProg(data || {
         current_index: 0,
         correct_count: 0,
         wrong_count: 0
@@ -998,7 +1498,42 @@ function BankPanel({
     className: "tag"
   }, "מצב מבחן"), /*#__PURE__*/React.createElement("h3", null, "מבחן מתוזמן"), /*#__PURE__*/React.createElement("p", null, "שאלות רנדומליות, ספירת זמן, וחשיפת התשובות רק בסיום."), /*#__PURE__*/React.createElement("div", {
     className: "go"
-  }, "צרו מבחן ‹"))), prog && /*#__PURE__*/React.createElement("div", {
+  }, "צרו מבחן ‹")), h("button", {
+    className: "mode",
+    onClick: () => go('offlinehub', {
+      bank: B.key
+    })
+  }, h("div", {
+    className: "arc"
+  }, h(Arc, {
+    color: "#c8a14a"
+  })), h("div", {
+    className: "tag",
+    style: {
+      color: 'var(--gold)'
+    }
+  }, "מצב אופליין"), h("h3", null, "מבחן אופליין"), h("p", null, "מכינים מראש מבחן שנשמר במכשיר — ואפשר לפתור אותו גם בלי חיבור לאינטרנט."), offCount > 0 && h("div", {
+    className: "muted",
+    style: {
+      fontSize: 12,
+      marginTop: 10
+    }
+  }, offReady > 0 ? `${offReady} מבחנים מוכנים במכשיר` : `${offCount} מבחנים שמורים במכשיר`), h("div", {
+    className: "go"
+  }, "לניהול המבחנים ‹")), h("button", {
+    className: "mode teal",
+    onClick: () => go('sharednew', {
+      bank: B.key
+    })
+  }, h("div", {
+    className: "arc"
+  }, h(Arc, {
+    color: "#0e7c86"
+  })), h("div", {
+    className: "tag"
+  }, "מבחן משותף"), h("h3", null, "הזמנת חבר למבחן"), h("p", null, "שולחים קישור, כולם מתחילים יחד מאותן שאלות — ובסוף משווים תשובות וציונים."), h("div", {
+    className: "go"
+  }, "יצירת הזמנה ‹"))), prog && /*#__PURE__*/React.createElement("div", {
     className: "statbar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "chipstat"
@@ -1100,36 +1635,57 @@ function Learn({
   useEffect(() => {
     let on = true;
     (async () => {
-      let {
-        data
-      } = await sb.from(B.tables.progress).select('*').maybeSingle();
-      if (!data) {
-        await sb.from(B.tables.progress).insert({
-          current_index: 0,
-          correct_count: 0,
-          wrong_count: 0
+      const cache = loadLearnCache(B);
+      let data = null,
+        ans = null,
+        failed = false;
+      if (isOffline()) {
+        failed = true;
+      } else {
+        const pr = await sb.from(B.tables.progress).select('*').maybeSingle();
+        const ar = await sb.from(B.tables.answers).select('question_id,is_correct,created_at').order('created_at', {
+          ascending: true
         });
-        data = {
+        if (pr.error || ar.error) failed = true;else {
+          data = pr.data;
+          ans = ar.data;
+          if (!data) {
+            await sb.from(B.tables.progress).insert({
+              current_index: 0,
+              correct_count: 0,
+              wrong_count: 0
+            });
+            data = {
+              current_index: 0,
+              correct_count: 0,
+              wrong_count: 0
+            };
+          }
+        }
+      }
+      let cur = 0,
+        bst = 0,
+        set = new Set();
+      if (failed && cache) {
+        // ללא רשת — ממשיכים מהתמונה האחרונה ששמורה במכשיר
+        data = cache.prog;
+        set = new Set(cache.answered || []);
+        cur = cache.streak || 0;
+        bst = cache.best || 0;
+      } else {
+        if (!data) data = {
           current_index: 0,
           correct_count: 0,
           wrong_count: 0
         };
+        (ans || []).forEach(r => {
+          set.add(r.question_id);
+          if (r.is_correct) {
+            cur++;
+            if (cur > bst) bst = cur;
+          } else cur = 0;
+        });
       }
-      const {
-        data: ans
-      } = await sb.from(B.tables.answers).select('question_id,is_correct,created_at').order('created_at', {
-        ascending: true
-      });
-      let cur = 0,
-        bst = 0;
-      const set = new Set();
-      (ans || []).forEach(r => {
-        set.add(r.question_id);
-        if (r.is_correct) {
-          cur++;
-          if (cur > bst) bst = cur;
-        } else cur = 0;
-      });
       answeredRef.current = set;
       // ה-current_index משמש כמצביע לשאלה הנוכחית; מצמידים אותו לשאלה הראשונה שטרם נענתה
       let idx;
@@ -1139,18 +1695,20 @@ function Learn({
         if (idx < 0) idx = B.TOTAL;
       }
       if (!on) return;
-      setStreak(cur);
-      setBest(bst);
-      setProg({
+      const np = {
         ...data,
         current_index: idx
-      });
+      };
+      setStreak(cur);
+      setBest(bst);
+      setProg(np);
+      saveLearnCache(B, np, set, cur, bst);
     })();
     return () => {
       on = false;
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
-  }, [sb]);
+  }, [sb, B]);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [prog && prog.current_index]);
@@ -1171,12 +1729,13 @@ function Learn({
     setGraded(null);
     setSel([]);
     setProg(np);
-    await sb.from(B.tables.progress).update({
+    saveLearnCache(B, np, answeredRef.current, streak, best);
+    await writeProgress(sb, B.tables.progress, {
       current_index: np.current_index,
       correct_count: np.correct_count,
       wrong_count: np.wrong_count,
       updated_at: new Date().toISOString()
-    }).eq('user_id', (await sb.auth.getUser()).data.user.id);
+    }, await uidOf(sb));
   };
   const submit = async () => {
     if (sel.length === 0 || busy) return;
@@ -1193,17 +1752,14 @@ function Learn({
       wrong_count: prog.wrong_count + (correct ? 0 : 1)
     };
     pendingNext.current = np;
-    const uid = (await sb.auth.getUser()).data.user.id;
-    sb.from(B.tables.answers).insert({
+    saveLearnCache(B, np, answeredRef.current, newStreak, Math.max(best, newStreak));
+    const uid = await uidOf(sb);
+    writeRow(sb, B.tables.answers, {
       user_id: uid,
       question_id: q.id,
       selected: sel,
       is_correct: correct,
       created_at: new Date().toISOString()
-    }).then(({
-      error
-    }) => {
-      if (error) console.error('learning_answers insert failed:', error.message);
     });
     setBusy(false);
     if (correct) {
@@ -1255,10 +1811,11 @@ function Learn({
       current_index: j
     };
     setProg(np);
-    await sb.from(B.tables.progress).update({
+    saveLearnCache(B, np, answeredRef.current, streak, best);
+    await writeProgress(sb, B.tables.progress, {
       current_index: j,
       updated_at: new Date().toISOString()
-    }).eq('user_id', (await sb.auth.getUser()).data.user.id);
+    }, await uidOf(sb));
   };
   const pct = Math.round(answeredCount / B.TOTAL * 100);
   const streakPct = best > 0 ? Math.round(streak / best * 100) : 0;
@@ -1648,6 +2205,7 @@ function ExamNew({
   go,
   B
 }) {
+  const online = useOnline();
   const [n, setN] = useState(20);
   const [min, setMin] = useState(20);
   const [busy, setBusy] = useState(false);
@@ -1686,7 +2244,9 @@ function ExamNew({
     className: "hero"
   }, /*#__PURE__*/React.createElement("h1", null, "מבחן חדש · ", B.title), /*#__PURE__*/React.createElement("p", null, "בחרו כמה שאלות וכמה זמן. השאלות ייבחרו אקראית מתוך כל המאגר.")), /*#__PURE__*/React.createElement("div", {
     className: "card pad"
-  }, err && /*#__PURE__*/React.createElement("div", {
+  }, !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אין חיבור לאינטרנט. כדי לפתור מבחן עכשיו השתמשו ב", h("b", null, "מבחן אופליין"), " — מבחן שנשמר מראש במכשיר.")), err && /*#__PURE__*/React.createElement("div", {
     className: "err"
   }, err), /*#__PURE__*/React.createElement("div", {
     className: "numgrid"
@@ -1727,9 +2287,15 @@ function ExamNew({
     }
   }, a, " שאלות · ", b, " דק׳"))), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-primary btn-block btn-lg",
-    disabled: busy,
+    disabled: busy || !online,
     onClick: create
-  }, busy ? 'יוצר…' : 'התחלת המבחן'), /*#__PURE__*/React.createElement("p", {
+  }, busy ? 'יוצר…' : 'התחלת המבחן'), !online && h("button", {
+    className: "btn btn-ghost btn-block",
+    style: {
+      marginTop: 10
+    },
+    onClick: () => go('offlinehub')
+  }, "למבחני האופליין ›"), /*#__PURE__*/React.createElement("p", {
     className: "muted",
     style: {
       marginTop: 14,
@@ -1749,25 +2315,58 @@ function ExamRun({
   qids,
   duration
 }) {
-  const questions = qids.map(id => B.QBY[id]);
+  const endsAt = useRef(Date.now() + duration * 1000).current;
+  const onFinish = useCallback(async (ansMap, correctN, total) => {
+    const rows = qids.map(qid => {
+      const s = ansMap[qid] || [];
+      return {
+        session_id: session.id,
+        question_id: qid,
+        selected: s,
+        is_correct: s.length > 0 && eqSet(s, B.QBY[qid].correct)
+      };
+    });
+    const {
+      error
+    } = await sb.from(B.tables.examAnswers).insert(rows);
+    if (error) throw new Error(error.message);
+    await sb.from(B.tables.sessions).update({
+      finished_at: new Date().toISOString(),
+      score_correct: correctN,
+      score_total: total
+    }).eq('id', session.id);
+    go('result', {
+      sessionId: session.id
+    });
+  }, [sb, B, session, qids, go]);
+  return h(ExamEngine, {
+    B,
+    qids,
+    endsAt,
+    onFinish
+  });
+}
+
+/* ============================================================
+   EXAM — מנוע משותף (מבחן רגיל / אופליין / משותף)
+============================================================ */
+function ExamEngine({
+  B,
+  qids,
+  endsAt,
+  onFinish,
+  banner,
+  finishLabel
+}) {
+  const questions = qids.map(id => B.QBY[id]).filter(Boolean);
   const [i, setI] = useState(0);
   const [ans, setAns] = useState({}); // qid -> [letters]
-  const [left, setLeft] = useState(duration);
+  const [left, setLeft] = useState(() => Math.max(0, Math.round((endsAt - Date.now()) / 1000)));
   const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState('');
   const submitRef = useRef(false);
-  useEffect(() => {
-    const t = setInterval(() => setLeft(l => {
-      if (l <= 1) {
-        clearInterval(t);
-        doSubmit(true);
-        return 0;
-      }
-      return l - 1;
-    }), 1000);
-    return () => clearInterval(t);
-  }, []);
   const q = questions[i];
-  const sel = ans[q.id] || [];
+  const sel = q ? ans[q.id] || [] : [];
   const toggle = L => setAns(a => {
     const cur = a[q.id] || [];
     return {
@@ -1775,35 +2374,49 @@ function ExamRun({
       [q.id]: cur.includes(L) ? cur.filter(x => x !== L) : [...cur, L]
     };
   });
-  const doSubmit = async (auto = false) => {
+  const doSubmit = async () => {
     if (submitRef.current) return;
     submitRef.current = true;
     setSubmitting(true);
+    setErr('');
     let correctN = 0;
-    const rows = questions.map(qq => {
+    questions.forEach(qq => {
       const s = ans[qq.id] || [];
-      const ok = s.length > 0 && eqSet(s, qq.correct);
-      if (ok) correctN++;
-      return {
-        session_id: session.id,
-        question_id: qq.id,
-        selected: s,
-        is_correct: ok
-      };
+      if (s.length > 0 && eqSet(s, qq.correct)) correctN++;
     });
-    await sb.from(B.tables.examAnswers).insert(rows);
-    await sb.from(B.tables.sessions).update({
-      finished_at: new Date().toISOString(),
-      score_correct: correctN,
-      score_total: questions.length
-    }).eq('id', session.id);
-    go('result', {
-      sessionId: session.id
-    });
+    try {
+      await onFinish(ans, correctN, questions.length);
+    } catch (e) {
+      submitRef.current = false;
+      setSubmitting(false);
+      setErr('לא הצלחנו לשמור את המבחן: ' + (e.message || e));
+    }
   };
+  // הטיימר נשען על שעת הסיום ולא על ספירה יורדת — כדי לשרוד נעילת מסך ומעבר בין טאבים
+  const submitNow = useRef(doSubmit);
+  submitNow.current = doSubmit;
+  useEffect(() => {
+    const t = setInterval(() => {
+      const l = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+      setLeft(l);
+      if (l <= 0) {
+        clearInterval(t);
+        submitNow.current();
+      }
+    }, 500);
+    return () => clearInterval(t);
+  }, [endsAt]);
   const answeredCount = questions.filter(qq => (ans[qq.id] || []).length > 0).length;
   const warn = left <= 30;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  if (!q) return h("div", {
+    className: "card pad empty"
+  }, "לא נמצאו שאלות למבחן הזה.");
+  return /*#__PURE__*/React.createElement(React.Fragment, null, banner || null, err && h("div", {
+    className: "err",
+    style: {
+      marginTop: 14
+    }
+  }, err), /*#__PURE__*/React.createElement("div", {
     className: "examtop"
   }, /*#__PURE__*/React.createElement("div", {
     className: 'clock' + (warn ? ' warn' : '')
@@ -1850,8 +2463,8 @@ function ExamRun({
   }, "הבאה ›") : /*#__PURE__*/React.createElement("button", {
     className: "btn btn-teal",
     disabled: submitting,
-    onClick: () => doSubmit(false)
-  }, submitting ? 'מסיים…' : 'סיום המבחן'))), /*#__PURE__*/React.createElement("div", {
+    onClick: doSubmit
+  }, submitting ? 'מסיים…' : finishLabel || 'סיום המבחן'))), /*#__PURE__*/React.createElement("div", {
     className: "card pad",
     style: {
       marginTop: 14
@@ -1877,69 +2490,45 @@ function ExamRun({
       marginTop: 16
     },
     disabled: submitting,
-    onClick: () => doSubmit(false)
-  }, submitting ? 'מסיים…' : 'סיום והצגת ציון')));
+    onClick: doSubmit
+  }, submitting ? 'מסיים…' : finishLabel || 'סיום והצגת ציון')));
 }
 
 /* ============================================================
    EXAM — result
 ============================================================ */
-function ExamResult({
-  sb,
-  go,
-  B,
-  sessionId
+/* ---------- כרטיס ציון — משותף לכל סוגי המבחנים ---------- */
+function ScoreCard({
+  correct,
+  total,
+  when,
+  sub
 }) {
-  const [sess, setSess] = useState(null);
-  const [rows, setRows] = useState(null);
-  useEffect(() => {
-    let on = true;
-    (async () => {
-      const {
-        data: s
-      } = await sb.from(B.tables.sessions).select('*').eq('id', sessionId).single();
-      const {
-        data: a
-      } = await sb.from(B.tables.examAnswers).select('*').eq('session_id', sessionId);
-      if (!on) return;
-      setSess(s);
-      const order = s.question_ids;
-      setRows((a || []).sort((x, y) => order.indexOf(x.question_id) - order.indexOf(y.question_id)));
-    })();
-    return () => {
-      on = false;
-    };
-  }, [sb, sessionId]);
-  if (!sess || !rows) return /*#__PURE__*/React.createElement("div", {
-    className: "spin"
-  });
-  const total = sess.score_total ?? rows.length;
-  const correct = sess.score_correct ?? rows.filter(r => r.is_correct).length;
-  const pct = Math.round(correct / total * 100);
+  const pct = total ? Math.round(correct / total * 100) : 0;
   const col = pct >= 80 ? 'var(--correct)' : pct >= 60 ? 'var(--gold)' : 'var(--wrong)';
   const R = 52,
     C = 2 * Math.PI * R,
     off = C * (1 - pct / 100);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  return h("div", {
     className: "card",
     style: {
       marginTop: 18
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, h("div", {
     className: "score"
-  }, /*#__PURE__*/React.createElement("svg", {
+  }, h("svg", {
     className: "ring",
     width: "130",
     height: "130",
     viewBox: "0 0 130 130"
-  }, /*#__PURE__*/React.createElement("circle", {
+  }, h("circle", {
     cx: "65",
     cy: "65",
     r: R,
     fill: "none",
     stroke: "var(--court-line)",
     strokeWidth: "10"
-  }), /*#__PURE__*/React.createElement("circle", {
+  }), h("circle", {
     cx: "65",
     cy: "65",
     r: R,
@@ -1950,7 +2539,7 @@ function ExamResult({
     strokeDasharray: C,
     strokeDashoffset: off,
     transform: "rotate(-90 65 65)"
-  }), /*#__PURE__*/React.createElement("text", {
+  }), h("text", {
     x: "65",
     y: "60",
     textAnchor: "middle",
@@ -1958,97 +2547,168 @@ function ExamResult({
     fontWeight: "700",
     fontSize: "26",
     fill: "var(--ink)"
-  }, pct, "%"), /*#__PURE__*/React.createElement("text", {
+  }, pct, "%"), h("text", {
     x: "65",
     y: "80",
     textAnchor: "middle",
     fontFamily: "Rubik",
     fontSize: "11",
     fill: "var(--ink-soft)"
-  }, "ציון")), /*#__PURE__*/React.createElement("div", {
+  }, "ציון")), h("div", {
     className: "big",
     style: {
       color: col
     }
-  }, correct, /*#__PURE__*/React.createElement("span", {
+  }, correct, h("span", {
     style: {
       color: 'var(--ink-faint)',
       fontSize: 28
     }
-  }, "/", total)), /*#__PURE__*/React.createElement("div", {
+  }, "/", total)), h("div", {
     className: "lbl"
-  }, "שאלות נכונות"), /*#__PURE__*/React.createElement("div", {
+  }, "שאלות נכונות"), when && h("div", {
     className: "sub"
-  }, fmtDateTime(new Date(sess.started_at))))), /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontSize: 18,
-      margin: '22px 0 4px'
-    }
-  }, "פירוט השאלות"), /*#__PURE__*/React.createElement("div", {
+  }, when), sub && h("div", {
+    className: "sub"
+  }, sub)));
+}
+
+/* ---------- פירוט השאלות — rows: {question_id, selected, is_correct} ---------- */
+function ReviewList({
+  B,
+  rows,
+  extra
+}) {
+  return h("div", {
     className: "rev"
   }, rows.map((r, k) => {
     const q = B.QBY[r.question_id];
-    const empty = r.selected.length === 0;
-    return /*#__PURE__*/React.createElement("div", {
+    if (!q) return null;
+    const picked = r.selected || [];
+    const empty = picked.length === 0;
+    return h("div", {
       key: k,
       className: 'card pad revq ' + (r.is_correct ? 'ok' : 'no')
-    }, /*#__PURE__*/React.createElement("span", {
+    }, h("span", {
       className: 'revtag ' + (r.is_correct ? 'ok' : 'no')
-    }, r.is_correct ? '✓ נכון' : empty ? '— לא נענתה' : '✗ שגוי'), /*#__PURE__*/React.createElement("div", {
+    }, r.is_correct ? '✓ נכון' : empty ? '— לא נענתה' : '✗ שגוי'), h("div", {
       className: "qmeta",
       style: {
         marginBottom: 10
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, h("span", {
       className: "qid"
-    }, q.id), /*#__PURE__*/React.createElement("span", {
+    }, q.id), h("span", {
       className: "qchapter"
-    }, B.chapterLabel(q))), /*#__PURE__*/React.createElement("p", {
+    }, B.chapterLabel(q)), h("span", {
+      className: "qserial"
+    }, "#", k + 1)), h("p", {
       className: "stem ltr",
       style: {
         fontSize: 15,
         marginBottom: 12
       }
-    }, q.stem), /*#__PURE__*/React.createElement("div", {
+    }, q.stem), h("div", {
       className: "opts"
     }, letters(q).map(L => {
       const isC = q.correct.includes(L),
-        picked = r.selected.includes(L);
+        sel = picked.includes(L);
       let cls = 'opt';
-      if (isC && picked) cls += ' correct';else if (isC && !picked) cls += ' misscorrect';else if (!isC && picked) cls += ' wrongsel';
-      return /*#__PURE__*/React.createElement("div", {
+      if (isC && sel) cls += ' correct';else if (isC && !sel) cls += ' misscorrect';else if (!isC && sel) cls += ' wrongsel';
+      return h("div", {
         key: L,
         className: cls
-      }, /*#__PURE__*/React.createElement("span", {
+      }, h("span", {
         className: "box"
-      }, L), /*#__PURE__*/React.createElement("span", {
+      }, L), h("span", {
         className: "otext"
       }, q.options[L]));
-    })), /*#__PURE__*/React.createElement("div", {
+    })), extra ? extra(q, k) : null, h("div", {
       className: "rules",
       style: {
         borderColor: 'var(--teal)',
         background: 'var(--teal-tint)'
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, h("div", {
       className: "lbl",
       style: {
         color: 'var(--teal)'
       }
-    }, B.revealLabel), /*#__PURE__*/React.createElement("div", {
+    }, B.revealLabel), h("div", {
       className: "ref"
     }, q.rules)));
-  })), /*#__PURE__*/React.createElement("div", {
+  }));
+}
+
+function ExamResult({
+  sb,
+  go,
+  B,
+  sessionId
+}) {
+  const [sess, setSess] = useState(null);
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    let on = true;
+    (async () => {
+      const {
+        data: s,
+        error
+      } = await sb.from(B.tables.sessions).select('*').eq('id', sessionId).single();
+      const {
+        data: a
+      } = await sb.from(B.tables.examAnswers).select('*').eq('session_id', sessionId);
+      if (!on) return;
+      if (error || !s) {
+        setErr('לא הצלחנו לטעון את המבחן. ייתכן שאין חיבור לאינטרנט.');
+        return;
+      }
+      setSess(s);
+      const order = s.question_ids;
+      setRows((a || []).sort((x, y) => order.indexOf(x.question_id) - order.indexOf(y.question_id)));
+    })();
+    return () => {
+      on = false;
+    };
+  }, [sb, B, sessionId]);
+  if (err) return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, err), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית"));
+  if (!sess || !rows) return h("div", {
+    className: "spin"
+  });
+  const total = sess.score_total ?? rows.length;
+  const correct = sess.score_correct ?? rows.filter(r => r.is_correct).length;
+  return h(React.Fragment, null, h(ScoreCard, {
+    correct,
+    total,
+    when: fmtDateTime(new Date(sess.started_at))
+  }), h("h2", {
+    style: {
+      fontSize: 18,
+      margin: '22px 0 4px'
+    }
+  }, "פירוט השאלות"), h(ReviewList, {
+    B,
+    rows
+  }), h("div", {
     style: {
       display: 'flex',
       gap: 10,
       margin: '22px 0',
       flexWrap: 'wrap'
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, h("button", {
     className: "btn btn-primary",
     onClick: () => go('examnew')
-  }, "מבחן נוסף"), /*#__PURE__*/React.createElement("button", {
+  }, "מבחן נוסף"), h("button", {
     className: "btn btn-ghost",
     onClick: () => go('home')
   }, "דף הבית")));
@@ -2062,6 +2722,7 @@ function History({
   go,
   B
 }) {
+  const online = useOnline();
   const [list, setList] = useState(null);
   useEffect(() => {
     let on = true;
@@ -2081,7 +2742,9 @@ function History({
   });
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "hero"
-  }, /*#__PURE__*/React.createElement("h1", null, "מבחנים קודמים"), /*#__PURE__*/React.createElement("p", null, list.length ? `${list.length} מבחנים הושלמו.` : 'עדיין אין מבחנים שהושלמו.')), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h1", null, "מבחנים קודמים"), /*#__PURE__*/React.createElement("p", null, list.length ? `${list.length} מבחנים הושלמו.` : 'עדיין אין מבחנים שהושלמו.')), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אין חיבור לאינטרנט — ההיסטוריה מהענן לא נטענת. מבחני האופליין שפתרתם שמורים במסך ", h("b", null, "מבחן אופליין"), ".")), list.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "card pad empty"
   }, /*#__PURE__*/React.createElement(Arc, {
     size: 70,
@@ -2123,6 +2786,1053 @@ function History({
     }, pct, "%"));
   })));
 }
+
+/* ============================================================
+   OFFLINE — ניהול מבחנים השמורים במכשיר
+============================================================ */
+const initialOf = name => ((name || '?').trim().charAt(0) || '?').toUpperCase();
+
+function OfflineHub({
+  sb,
+  go,
+  B
+}) {
+  const online = useOnline();
+  useLocalVersion();
+  const [n, setN] = useState(20);
+  const [min, setMin] = useState(20);
+  const [title, setTitle] = useState('');
+  const [msg, setMsg] = useState('');
+  const [del, setDel] = useState(null);
+  const list = OfflineExams.forBank(B.key);
+  const create = () => {
+    const num = Math.max(1, Math.min(B.TOTAL, Math.round(Number(n) || 0)));
+    const mins = Math.max(1, Math.round(Number(min) || 0));
+    OfflineExams.save(makeOfflineExam(B, num, mins, title));
+    setTitle('');
+    setMsg(`המבחן נשמר במכשיר — ${num} שאלות, ${mins} דקות. אפשר לפתור אותו גם בלי חיבור לאינטרנט.`);
+  };
+  return h(React.Fragment, null, h("div", {
+    className: "hero"
+  }, h("h1", null, "מבחן אופליין · ", B.title), h("p", null, "מכינים את המבחן מראש והוא נשמר בזיכרון המכשיר. אפשר לפתור אותו בכל זמן, גם בלי חיבור לאינטרנט — והתוצאות יסונכרנו להיסטוריה ברגע שיחזור החיבור.")), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אתם כרגע במצב אופליין. אפשר לפתור כל מבחן ששמור כאן; מבחן חדש שייווצר עכשיו יישמר גם הוא במכשיר.")), h("div", {
+    className: "card pad"
+  }, h("h2", {
+    style: {
+      fontSize: 17,
+      margin: '0 0 14px'
+    }
+  }, "הכנת מבחן חדש למכשיר"), msg && h("div", {
+    className: "ok-msg"
+  }, msg), h("div", {
+    className: "field"
+  }, h("label", null, "שם המבחן (רשות)"), h("input", {
+    placeholder: 'למשל: חזרה לפני המבחן',
+    value: title,
+    onChange: e => setTitle(e.target.value)
+  })), h("div", {
+    className: "numgrid"
+  }, h("div", {
+    className: "field"
+  }, h("label", null, "מספר שאלות (עד ", B.TOTAL, ")"), h("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    max: B.TOTAL,
+    value: n,
+    onChange: e => setN(e.target.value)
+  })), h("div", {
+    className: "field"
+  }, h("label", null, "משך בדקות"), h("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    value: min,
+    onChange: e => setMin(e.target.value)
+  }))), h("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      margin: '4px 0 18px'
+    }
+  }, [[10, 10], [20, 20], [30, 30], [50, 45]].map(([a, b]) => h("button", {
+    key: a,
+    className: "btn btn-ghost",
+    style: {
+      padding: '8px 14px',
+      fontSize: 13
+    },
+    onClick: () => {
+      setN(a);
+      setMin(b);
+    }
+  }, a, " שאלות · ", b, " דק׳"))), h("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    onClick: create
+  }, "שמירת המבחן במכשיר")), h("h2", {
+    style: {
+      fontSize: 18,
+      margin: '24px 0 10px'
+    }
+  }, "המבחנים ששמורים אצלכם", h("span", {
+    className: "cnt2",
+    style: {
+      marginInlineStart: 8
+    }
+  }, list.length)), list.length === 0 ? h("div", {
+    className: "card pad empty"
+  }, h(Arc, {
+    size: 70,
+    color: "#90a0b5"
+  }), h("p", null, "עדיין לא הכנתם מבחן אופליין.")) : h("div", {
+    className: "rev"
+  }, list.map(ex => {
+    const done = ex.status === 'done';
+    const pct = done && ex.total ? Math.round(ex.correct / ex.total * 100) : 0;
+    return h("div", {
+      key: ex.id,
+      className: "offcard"
+    }, h("div", {
+      className: "oinfo"
+    }, h("div", {
+      className: "otitle"
+    }, ex.title || 'מבחן אופליין'), h("div", {
+      className: "osub"
+    }, ex.qids.length, " שאלות · ", Math.round(ex.duration / 60), " דק׳ · נוצר ", fmtDateTime(new Date(ex.createdAt))), h("div", {
+      style: {
+        marginTop: 8,
+        display: 'flex',
+        gap: 6,
+        flexWrap: 'wrap'
+      }
+    }, done ? h("span", {
+      className: "pbadge done"
+    }, "הושלם · ", ex.correct, "/", ex.total, " (", pct, "%)") : h("span", {
+      className: "pbadge"
+    }, "מוכן לפתירה"), done && h("span", {
+      className: 'pbadge' + (ex.synced ? ' done' : ' wait')
+    }, ex.synced ? 'סונכרן להיסטוריה' : 'ממתין לסנכרון'))), h("button", {
+      className: 'btn ' + (done ? 'btn-ghost' : 'btn-primary'),
+      style: {
+        padding: '10px 15px',
+        fontSize: 14,
+        flex: 'none'
+      },
+      onClick: () => go(done ? 'offlineresult' : 'offlinerun', {
+        examId: ex.id
+      })
+    }, done ? 'תוצאות' : 'התחלה'), h("button", {
+      className: "iconbtn",
+      title: "מחיקה",
+      aria: "מחיקת המבחן",
+      onClick: () => setDel(ex)
+    }, "✕"));
+  })), del && h(ConfirmDialog, {
+    text: `למחוק את "${del.title || 'מבחן אופליין'}" מהמכשיר? ${del.status === 'done' && !del.synced ? 'התוצאות עדיין לא סונכרנו וירדו לצמיתות.' : ''}`,
+    onYes: () => {
+      OfflineExams.remove(del.id);
+      setDel(null);
+    },
+    onNo: () => setDel(null)
+  }));
+}
+
+function OfflineRun({
+  go,
+  B,
+  examId
+}) {
+  const exam = OfflineExams.byId(examId);
+  const startedAt = useRef(new Date().toISOString()).current;
+  const endsAt = useRef(Date.now() + (exam ? exam.duration : 0) * 1000).current;
+  const onFinish = useCallback(async (ansMap, correctN) => {
+    finishOfflineExam(B, {
+      ...exam,
+      startedAt
+    }, ansMap, correctN);
+    go('offlineresult', {
+      examId
+    });
+  }, [B, exam, examId, go, startedAt]);
+  if (!exam) return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, "המבחן לא נמצא במכשיר."), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('offlinehub')
+  }, "חזרה"));
+  if (exam.status === 'done') {
+    return h("div", {
+      className: "card pad empty",
+      style: {
+        marginTop: 18
+      }
+    }, h("p", null, "המבחן הזה כבר נפתר."), h("button", {
+      className: "btn btn-primary",
+      onClick: () => go('offlineresult', {
+        examId
+      })
+    }, "לצפייה בתוצאות"));
+  }
+  return h(ExamEngine, {
+    B,
+    qids: exam.qids,
+    endsAt,
+    onFinish,
+    banner: h("div", {
+      className: "banner info",
+      style: {
+        marginTop: 14
+      }
+    }, h("span", null, "מבחן אופליין", exam.title ? ' · ' + exam.title : '', " — התשובות נשמרות במכשיר ויסונכרנו כשיחזור החיבור."))
+  });
+}
+
+function OfflineResult({
+  go,
+  B,
+  examId
+}) {
+  useLocalVersion();
+  const exam = OfflineExams.byId(examId);
+  if (!exam || exam.status !== 'done') return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, "לא נמצאו תוצאות למבחן הזה."), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('offlinehub')
+  }, "חזרה"));
+  return h(React.Fragment, null, h("div", {
+    className: 'banner ' + (exam.synced ? 'info' : 'warn'),
+    style: {
+      marginTop: 16
+    }
+  }, h("span", null, exam.synced ? 'התוצאות סונכרנו והן מופיעות גם בהיסטוריית המבחנים.' : 'התוצאות שמורות במכשיר וממתינות לסנכרון עם ההיסטוריה בענן.')), h(ScoreCard, {
+    correct: exam.correct,
+    total: exam.total,
+    when: fmtDateTime(new Date(exam.finishedAt)),
+    sub: exam.title || 'מבחן אופליין'
+  }), h("h2", {
+    style: {
+      fontSize: 18,
+      margin: '22px 0 4px'
+    }
+  }, "פירוט השאלות"), h(ReviewList, {
+    B,
+    rows: exam.rows || []
+  }), h("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      margin: '22px 0',
+      flexWrap: 'wrap'
+    }
+  }, h("button", {
+    className: "btn btn-primary",
+    onClick: () => go('offlinehub')
+  }, "מבחני האופליין"), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית")));
+}
+
+/* ============================================================
+   SHARED EXAM — יצירה, הזמנה, לובי, מבחן והשוואה
+============================================================ */
+function CopyLink({
+  url
+}) {
+  const [copied, setCopied] = useState(false);
+  const ref = useRef(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      if (ref.current) {
+        ref.current.select();
+        try {
+          document.execCommand('copy');
+        } catch (e2) {}
+      }
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
+  const share = async () => {
+    try {
+      await navigator.share({
+        title: 'הזמנה למבחן משותף',
+        text: 'הצטרפו אליי למבחן משותף בחוקת הכדוריד',
+        url
+      });
+    } catch (e) {}
+  };
+  return h(React.Fragment, null, h("div", {
+    className: "linkrow"
+  }, h("input", {
+    ref,
+    readOnly: true,
+    value: url,
+    onFocus: e => e.target.select()
+  }), h("button", {
+    className: "btn btn-teal",
+    style: {
+      padding: '11px 16px',
+      fontSize: 14
+    },
+    onClick: copy
+  }, copied ? '✓ הועתק' : 'העתקה')), navigator.share && h("button", {
+    className: "btn btn-ghost btn-block",
+    style: {
+      marginTop: 8
+    },
+    onClick: share
+  }, "שיתוף הקישור ›"));
+}
+
+function SharedNew({
+  sb,
+  go,
+  B
+}) {
+  const online = useOnline();
+  const [name, setName] = useState('');
+  const [n, setN] = useState(20);
+  const [min, setMin] = useState(20);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    emailOf(sb).then(e => setName(savedName(e)));
+  }, [sb]);
+  const create = async () => {
+    setErr('');
+    const num = Math.max(1, Math.min(B.TOTAL, Math.round(Number(n) || 0)));
+    const mins = Math.max(1, Math.round(Number(min) || 0));
+    const nm = (name || '').trim();
+    if (!nm) {
+      setErr('בחרו שם תצוגה — כך שאר המשתתפים יזהו אתכם.');
+      return;
+    }
+    setBusy(true);
+    LS.set(NAME_KEY, nm);
+    const qids = shuffle(B.QUIZ.map(q => q.id)).slice(0, num);
+    const uid = await uidOf(sb);
+    let exam = null,
+      lastErr = null;
+    for (let a = 0; a < 5 && !exam; a++) {
+      const {
+        data,
+        error
+      } = await sb.from('shared_exams').insert({
+        code: makeCode(),
+        host_id: uid,
+        bank: B.key,
+        num_questions: num,
+        duration_seconds: mins * 60,
+        question_ids: qids
+      }).select().single();
+      if (!error) exam = data;else {
+        lastErr = error;
+        if (!/duplicate|unique/i.test(error.message)) break;
+      }
+    }
+    if (!exam) {
+      setErr(translateSharedErr(lastErr ? lastErr.message : 'שגיאה ביצירת המבחן'));
+      setBusy(false);
+      return;
+    }
+    const {
+      error: jerr
+    } = await sb.rpc('join_shared_exam', {
+      p_code: exam.code,
+      p_name: nm
+    });
+    setBusy(false);
+    if (jerr) {
+      setErr(translateSharedErr(jerr.message));
+      return;
+    }
+    setActiveShared(exam);
+    go('sharedlobby', {
+      examId: exam.id
+    });
+  };
+  return h(React.Fragment, null, h("div", {
+    className: "hero"
+  }, h("h1", null, "מבחן משותף · ", B.title), h("p", null, "מגדירים את תנאי המבחן, שולחים קישור הזמנה, וכולם מתחילים יחד — אותן שאלות, אותו סדר, אותו זמן. בסיום משווים תשובות וציונים.")), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "מבחן משותף דורש חיבור לאינטרנט. ללא חיבור אפשר להשתמש במבחן אופליין.")), h("div", {
+    className: "card pad"
+  }, err && h("div", {
+    className: "err"
+  }, err), h("div", {
+    className: "field"
+  }, h("label", null, "שם התצוגה שלכם"), h("input", {
+    value: name,
+    onChange: e => setName(e.target.value),
+    placeholder: "איך שאר המשתתפים יראו אתכם"
+  })), h("div", {
+    className: "numgrid"
+  }, h("div", {
+    className: "field"
+  }, h("label", null, "מספר שאלות (עד ", B.TOTAL, ")"), h("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    max: B.TOTAL,
+    value: n,
+    onChange: e => setN(e.target.value)
+  })), h("div", {
+    className: "field"
+  }, h("label", null, "משך בדקות"), h("input", {
+    className: "ltr mono",
+    type: "number",
+    min: "1",
+    value: min,
+    onChange: e => setMin(e.target.value)
+  }))), h("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      margin: '4px 0 18px'
+    }
+  }, [[10, 10], [20, 20], [30, 30], [50, 45]].map(([a, b]) => h("button", {
+    key: a,
+    className: "btn btn-ghost",
+    style: {
+      padding: '8px 14px',
+      fontSize: 13
+    },
+    onClick: () => {
+      setN(a);
+      setMin(b);
+    }
+  }, a, " שאלות · ", b, " דק׳"))), h("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    disabled: busy || !online,
+    onClick: create
+  }, busy ? 'יוצר…' : 'יצירת הזמנה'), h("p", {
+    className: "muted",
+    style: {
+      marginTop: 14,
+      fontSize: 12.5
+    }
+  }, "אחרי הלחיצה תקבלו קישור להזמנה. המבחן מתחיל רק כשתלחצו על ״התחלת המבחן״ — ומאותו רגע לא ניתן להצטרף.")));
+}
+
+function SharedJoin({
+  sb,
+  go,
+  code,
+  onHandled
+}) {
+  const online = useOnline();
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    emailOf(sb).then(e => setName(savedName(e)));
+  }, [sb]);
+  const join = async () => {
+    const nm = (name || '').trim();
+    if (!nm) {
+      setErr('בחרו שם תצוגה.');
+      return;
+    }
+    setErr('');
+    setBusy(true);
+    LS.set(NAME_KEY, nm);
+    const {
+      data,
+      error
+    } = await sb.rpc('join_shared_exam', {
+      p_code: code,
+      p_name: nm
+    });
+    setBusy(false);
+    if (error) {
+      setErr(translateSharedErr(error.message));
+      return;
+    }
+    const exam = Array.isArray(data) ? data[0] : data;
+    setActiveShared(exam);
+    if (onHandled) onHandled();
+    go('sharedlobby', {
+      examId: exam.id,
+      bank: exam.bank
+    });
+  };
+  return h(React.Fragment, null, h("div", {
+    className: "hero"
+  }, h("h1", null, "הצטרפות למבחן משותף"), h("p", null, "הוזמנתם למבחן משותף. אשרו את שם התצוגה שלכם והצטרפו לחדר ההמתנה.")), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אין חיבור לאינטרנט — לא ניתן להצטרף כרגע. נסו שוב כשהחיבור יחזור.")), h("div", {
+    className: "card pad"
+  }, h("div", {
+    className: "muted",
+    style: {
+      marginBottom: 4
+    }
+  }, "קוד המבחן"), h("div", {
+    className: "codebox"
+  }, code), err && h("div", {
+    className: "err"
+  }, err), h("div", {
+    className: "field"
+  }, h("label", null, "שם התצוגה שלכם"), h("input", {
+    value: name,
+    onChange: e => setName(e.target.value),
+    onKeyDown: e => e.key === 'Enter' && join()
+  })), h("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    disabled: busy || !online,
+    onClick: join
+  }, busy ? 'מצטרף…' : 'הצטרפות למבחן'), h("button", {
+    className: "btn btn-ghost btn-block",
+    style: {
+      marginTop: 10
+    },
+    onClick: () => {
+      if (onHandled) onHandled();
+      go('home');
+    }
+  }, "ביטול")));
+}
+
+/* טעינה חוזרת של מצב המבחן המשותף — realtime עם גיבוי של תשאול תקופתי */
+function useSharedExam(sb, examId) {
+  const [exam, setExam] = useState(null);
+  const [parts, setParts] = useState([]);
+  const [err, setErr] = useState('');
+  const load = useCallback(async () => {
+    if (isOffline()) return null;
+    const {
+      data: e,
+      error
+    } = await sb.from('shared_exams').select('*').eq('id', examId).maybeSingle();
+    if (error || !e) {
+      setErr(error ? translateSharedErr(error.message) : 'המבחן לא נמצא.');
+      return null;
+    }
+    const {
+      data: p
+    } = await sb.from('shared_exam_participants').select('*').eq('exam_id', examId).order('joined_at', {
+      ascending: true
+    });
+    setErr('');
+    setExam(e);
+    setParts(p || []);
+    return e;
+  }, [sb, examId]);
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 3000);
+    let ch = null;
+    try {
+      ch = sb.channel('shared-' + examId).on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'shared_exams',
+        filter: 'id=eq.' + examId
+      }, load).on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'shared_exam_participants',
+        filter: 'exam_id=eq.' + examId
+      }, load).subscribe();
+    } catch (e) {}
+    return () => {
+      clearInterval(t);
+      if (ch) try {
+        sb.removeChannel(ch);
+      } catch (e) {}
+    };
+  }, [load]);
+  return {
+    exam,
+    parts,
+    err,
+    reload: load
+  };
+}
+
+function ParticipantRow({
+  p,
+  me,
+  rank,
+  right
+}) {
+  return h("div", {
+    className: 'prow' + (p.user_id === me ? ' me' : '')
+  }, rank != null && h("span", {
+    className: "lbrank"
+  }, rank), h("span", {
+    className: "avatar"
+  }, initialOf(p.display_name)), h("span", {
+    className: "pname"
+  }, p.display_name, p.user_id === me ? ' (אני)' : ''), p.is_host && h("span", {
+    className: "pbadge host"
+  }, "מארגן"), right);
+}
+
+function SharedLobby({
+  sb,
+  go,
+  examId
+}) {
+  const online = useOnline();
+  const {
+    exam,
+    parts,
+    err,
+    reload
+  } = useSharedExam(sb, examId);
+  const [me, setMe] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [serr, setSerr] = useState('');
+  useEffect(() => {
+    uidOf(sb).then(setMe);
+  }, [sb]);
+  useEffect(() => {
+    if (!exam) return;
+    if (exam.status === 'running') go('sharedrun', {
+      examId,
+      bank: exam.bank
+    });else if (exam.status === 'finished') go('sharedresult', {
+      examId,
+      bank: exam.bank
+    });
+  }, [exam && exam.status]);
+  const start = async () => {
+    setSerr('');
+    setBusy(true);
+    const {
+      error
+    } = await sb.rpc('start_shared_exam', {
+      p_exam: examId
+    });
+    setBusy(false);
+    if (error) {
+      setSerr(translateSharedErr(error.message));
+      return;
+    }
+    reload();
+  };
+  if (err) return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, err), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית"));
+  if (!exam) return h("div", {
+    className: "spin"
+  });
+  const B = BANKS[exam.bank] || BANKS.rules;
+  const isHost = me && exam.host_id === me;
+  const waiting = parts.length;
+  return h(React.Fragment, null, h("div", {
+    className: "hero"
+  }, h("h1", null, "חדר המתנה"), h("p", null, B.title, " · ", exam.num_questions, " שאלות · ", Math.round(exam.duration_seconds / 60), " דקות")), !online && h("div", {
+    className: "banner warn"
+  }, h("span", null, "אין חיבור — רשימת הממתינים לא מתעדכנת כרגע.")), isHost && h("div", {
+    className: "card pad"
+  }, h("div", {
+    className: "muted",
+    style: {
+      marginBottom: 2,
+      fontWeight: 600
+    }
+  }, "קוד ההזמנה"), h("div", {
+    className: "codebox"
+  }, exam.code), h("div", {
+    className: "muted",
+    style: {
+      marginBottom: 6,
+      fontWeight: 600
+    }
+  }, "קישור להזמנת חברים"), h(CopyLink, {
+    url: inviteLink(exam.code)
+  })), h("div", {
+    className: "card pad",
+    style: {
+      marginTop: 14
+    }
+  }, h("div", {
+    className: "secthead"
+  }, h("h2", {
+    style: {
+      fontSize: 17
+    }
+  }, "ממתינים לתחילת המבחן"), h("span", {
+    className: "cnt2"
+  }, waiting, " ", waiting === 1 ? 'משתתף' : 'משתתפים')), h("div", {
+    className: "plist"
+  }, parts.map(p => h(ParticipantRow, {
+    key: p.user_id,
+    p,
+    me,
+    right: h("span", {
+      className: "pbadge"
+    }, "ממתין")
+  }))), serr && h("div", {
+    className: "err",
+    style: {
+      marginTop: 14
+    }
+  }, serr), isHost ? h(React.Fragment, null, h("button", {
+    className: "btn btn-primary btn-block btn-lg",
+    style: {
+      marginTop: 16
+    },
+    disabled: busy || !online,
+    onClick: start
+  }, busy ? 'מתחיל…' : 'התחלת המבחן'), h("p", {
+    className: "muted",
+    style: {
+      marginTop: 12,
+      fontSize: 12.5,
+      textAlign: 'center'
+    }
+  }, "מרגע ההתחלה לא ניתן להצטרף למבחן.")) : h(React.Fragment, null, h("div", {
+    className: "waitdots",
+    style: {
+      marginTop: 18
+    }
+  }, h("i", null), h("i", null), h("i", null)), h("p", {
+    className: "muted",
+    style: {
+      textAlign: 'center',
+      marginTop: 4
+    }
+  }, "ממתינים שהמארגן יתחיל את המבחן…"))), h("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      margin: '18px 0',
+      justifyContent: 'center'
+    }
+  }, h("button", {
+    className: "linkbtn",
+    onClick: () => go('home')
+  }, "יציאה לדף הבית")));
+}
+
+function SharedRun({
+  sb,
+  go,
+  examId
+}) {
+  const {
+    exam,
+    parts,
+    err
+  } = useSharedExam(sb, examId);
+  const [me, setMe] = useState(null);
+  useEffect(() => {
+    uidOf(sb).then(setMe);
+  }, [sb]);
+  const myPart = me ? parts.find(p => p.user_id === me) : null;
+  useEffect(() => {
+    if (!exam) return;
+    if (exam.status === 'lobby') go('sharedlobby', {
+      examId,
+      bank: exam.bank
+    });else if (exam.status === 'finished' || myPart && myPart.finished_at) go('sharedresult', {
+      examId,
+      bank: exam.bank
+    });
+  }, [exam && exam.status, myPart && myPart.finished_at]);
+  const B = exam ? BANKS[exam.bank] || BANKS.rules : null;
+  const onFinish = useCallback(async (ansMap, correctN, total) => {
+    const uid = await uidOf(sb);
+    const rows = exam.question_ids.map(qid => {
+      const s = ansMap[qid] || [];
+      return {
+        exam_id: examId,
+        user_id: uid,
+        question_id: qid,
+        selected: s,
+        is_correct: s.length > 0 && eqSet(s, B.QBY[qid].correct)
+      };
+    });
+    const {
+      error
+    } = await sb.from('shared_exam_answers').upsert(rows, {
+      onConflict: 'exam_id,user_id,question_id'
+    });
+    if (error) throw new Error(translateSharedErr(error.message));
+    await sb.from('shared_exam_participants').update({
+      finished_at: new Date().toISOString(),
+      score_correct: correctN,
+      score_total: total
+    }).eq('exam_id', examId).eq('user_id', uid);
+    await sb.rpc('finish_shared_exam', {
+      p_exam: examId
+    });
+    go('sharedresult', {
+      examId,
+      bank: exam.bank
+    });
+  }, [sb, exam, examId, B, go]);
+  if (err) return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, err), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית"));
+  if (!exam || !exam.ends_at) return h("div", {
+    className: "spin"
+  });
+  const doneN = parts.filter(p => p.finished_at).length;
+  return h(ExamEngine, {
+    B,
+    qids: exam.question_ids,
+    endsAt: new Date(exam.ends_at).getTime(),
+    onFinish,
+    finishLabel: 'סיום ושליחת התשובות',
+    banner: h("div", {
+      className: "banner info",
+      style: {
+        marginTop: 14
+      }
+    }, h("span", null, "מבחן משותף · ", parts.length, " משתתפים", doneN ? ` · ${doneN} כבר סיימו` : ''))
+  });
+}
+
+function SharedResult({
+  sb,
+  go,
+  examId
+}) {
+  const {
+    exam,
+    parts,
+    err
+  } = useSharedExam(sb, examId);
+  const [me, setMe] = useState(null);
+  const [answers, setAnswers] = useState(null);
+  const [left, setLeft] = useState(0);
+  useEffect(() => {
+    uidOf(sb).then(setMe);
+  }, [sb]);
+  // כל עוד המבחן לא נסגר — מנסים לסגור אותו (נגמר הזמן / כולם סיימו)
+  useEffect(() => {
+    if (!exam || exam.status === 'finished') return;
+    const end = exam.ends_at ? new Date(exam.ends_at).getTime() : 0;
+    const clock = setInterval(() => {
+      if (end) setLeft(Math.max(0, Math.round((end - Date.now()) / 1000)));
+    }, 1000);
+    const ask = () => sb.rpc('finish_shared_exam', {
+      p_exam: examId
+    });
+    if (end) setLeft(Math.max(0, Math.round((end - Date.now()) / 1000)));
+    ask();
+    const t = setInterval(ask, 4000);
+    return () => {
+      clearInterval(clock);
+      clearInterval(t);
+    };
+  }, [sb, examId, exam && exam.status, exam && exam.ends_at]);
+  useEffect(() => {
+    if (!exam || exam.status !== 'finished') return;
+    let on = true;
+    setActiveShared(null); // המבחן נסגר — אין למה לחזור
+    sb.from('shared_exam_answers').select('*').eq('exam_id', examId).then(({
+      data
+    }) => {
+      if (on) setAnswers(data || []);
+    });
+    return () => {
+      on = false;
+    };
+  }, [sb, examId, exam && exam.status]);
+  if (err) return h("div", {
+    className: "card pad empty",
+    style: {
+      marginTop: 18
+    }
+  }, h("p", null, err), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית"));
+  if (!exam) return h("div", {
+    className: "spin"
+  });
+  const B = BANKS[exam.bank] || BANKS.rules;
+
+  /* --- עדיין רץ: ממתינים לשאר המשתתפים --- */
+  if (exam.status !== 'finished') {
+    const doneN = parts.filter(p => p.finished_at).length;
+    return h(React.Fragment, null, h("div", {
+      className: "hero"
+    }, h("h1", null, "סיימתם!"), h("p", null, "ההשוואה תיפתח כשכל המשתתפים יסיימו — או כשייגמר הזמן.")), h("div", {
+      className: "card pad"
+    }, h("div", {
+      className: "waitdots"
+    }, h("i", null), h("i", null), h("i", null)), h("div", {
+      style: {
+        textAlign: 'center',
+        marginTop: 6
+      }
+    }, h("div", {
+      className: "clock",
+      style: {
+        display: 'inline-flex'
+      }
+    }, "⏱ ", fmtClock(left))), h("div", {
+      className: "secthead",
+      style: {
+        marginTop: 20
+      }
+    }, h("h2", {
+      style: {
+        fontSize: 17
+      }
+    }, "מצב המשתתפים"), h("span", {
+      className: "cnt2"
+    }, doneN, "/", parts.length, " סיימו")), h("div", {
+      className: "plist"
+    }, parts.map(p => h(ParticipantRow, {
+      key: p.user_id,
+      p,
+      me,
+      right: h("span", {
+        className: 'pbadge ' + (p.finished_at ? 'done' : 'wait')
+      }, p.finished_at ? 'סיים' : 'עדיין פותר')
+    })))), h("div", {
+      style: {
+        textAlign: 'center',
+        margin: '18px 0'
+      }
+    }, h("button", {
+      className: "linkbtn",
+      onClick: () => go('home')
+    }, "דף הבית")));
+  }
+
+  /* --- המבחן הסתיים: השוואת תשובות --- */
+  if (!answers) return h("div", {
+    className: "spin"
+  });
+  const byUser = {};
+  answers.forEach(a => {
+    (byUser[a.user_id] = byUser[a.user_id] || {})[a.question_id] = a;
+  });
+  const nameOf = {};
+  parts.forEach(p => nameOf[p.user_id] = p.display_name);
+  const myRows = exam.question_ids.map(qid => byUser[me] && byUser[me][qid] || {
+    question_id: qid,
+    selected: [],
+    is_correct: false
+  });
+  const myCorrect = myRows.filter(r => r.is_correct).length;
+  const board = [...parts].sort((a, b) => {
+    const sa = a.score_correct == null ? -1 : a.score_correct;
+    const sb2 = b.score_correct == null ? -1 : b.score_correct;
+    return sb2 - sa;
+  });
+  const compare = (q, k) => h("div", {
+    className: "cmp"
+  }, h("div", {
+    className: "cmphead"
+  }, "מה כל אחד ענה"), parts.map(p => {
+    const a = byUser[p.user_id] && byUser[p.user_id][q.id];
+    const picked = a ? a.selected || [] : [];
+    return h("div", {
+      key: p.user_id,
+      className: 'cmprow' + (p.user_id === me ? ' me' : '')
+    }, h("span", {
+      className: "avatar",
+      style: {
+        width: 24,
+        height: 24,
+        fontSize: 11
+      }
+    }, initialOf(p.display_name)), h("span", {
+      className: "who"
+    }, p.display_name, p.user_id === me ? ' (אני)' : ''), h("span", {
+      className: 'pick' + (a ? a.is_correct ? ' ok' : ' no' : '')
+    }, picked.length ? picked.map(x => x.toUpperCase()).join(' ') : '—'));
+  }));
+  return h(React.Fragment, null, h("div", {
+    className: "hero"
+  }, h("h1", null, "תוצאות המבחן המשותף"), h("p", null, B.title, " · ", exam.question_ids.length, " שאלות · ", parts.length, " משתתפים")), h(ScoreCard, {
+    correct: myCorrect,
+    total: exam.question_ids.length,
+    when: exam.started_at ? fmtDateTime(new Date(exam.started_at)) : null,
+    sub: "הציון שלכם"
+  }), h("h2", {
+    style: {
+      fontSize: 18,
+      margin: '22px 0 10px'
+    }
+  }, "טבלת הציונים"), h("div", {
+    className: "plist",
+    style: {
+      marginTop: 0
+    }
+  }, board.map((p, i) => {
+    const tot = p.score_total || exam.question_ids.length;
+    const sc = p.score_correct;
+    const pct = sc == null ? null : Math.round(sc / tot * 100);
+    const col = pct == null ? 'var(--ink-faint)' : pct >= 80 ? 'var(--correct)' : pct >= 60 ? 'var(--gold)' : 'var(--wrong)';
+    return h(ParticipantRow, {
+      key: p.user_id,
+      p,
+      me,
+      rank: i + 1,
+      right: h("span", {
+        className: "lbscore",
+        style: {
+          color: col
+        }
+      }, sc == null ? 'לא סיים' : `${sc}/${tot} · ${pct}%`)
+    });
+  })), h("h2", {
+    style: {
+      fontSize: 18,
+      margin: '24px 0 4px'
+    }
+  }, "השוואת תשובות"), h("p", {
+    className: "sectdesc",
+    style: {
+      marginBottom: 10
+    }
+  }, "לכל שאלה: התשובה שלכם מסומנת על האפשרויות, ומתחת — מה ענה כל אחד מהמשתתפים."), h(ReviewList, {
+    B,
+    rows: myRows,
+    extra: compare
+  }), h("div", {
+    style: {
+      display: 'flex',
+      gap: 10,
+      margin: '22px 0',
+      flexWrap: 'wrap'
+    }
+  }, h("button", {
+    className: "btn btn-primary",
+    onClick: () => go('sharednew', {
+      bank: exam.bank
+    })
+  }, "מבחן משותף נוסף"), h("button", {
+    className: "btn btn-ghost",
+    onClick: () => go('home')
+  }, "דף הבית")));
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
